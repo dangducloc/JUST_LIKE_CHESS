@@ -1,0 +1,4 @@
+/.env
+**/__pycache__/**
+demo.py
+mail_demo.py
