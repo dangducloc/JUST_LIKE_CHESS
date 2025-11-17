@@ -24,7 +24,7 @@ def login() -> Response:
         res.set_cookie(key="user_id", value=str(id_user), httponly=True, samesite="Lax",max_age=3600)
         return res
     else:
-        return jsonify({"message": "Invalid credentials"}), 401
+        return make_response(jsonify({"message": "Invalid credentials"}), 401)
 
 # ========== REGISTER ==========
 @auth_bp.route('/register', methods=['POST'])
@@ -35,10 +35,10 @@ def register() -> Response:
     name = data.get('name')
 
     if not mail or not passwd or not name:
-        return jsonify({"message": "Missing required fields"}), 400
+        return make_response(jsonify({"message": "Missing required fields"}), 400)
 
     if user_col.find_one({"mail": mail}) or pending_col.find_one({"mail": mail}):
-        return jsonify({"message": "Email already registered"}), 409
+        return make_response(jsonify({"message": "Email already registered"}), 409)
 
     token = secrets.token_urlsafe(32)
 
@@ -49,22 +49,21 @@ def register() -> Response:
         "token": token
     })
 
-    # Gửi mail xác nhận
     send_confirmation_email(mail, token)
 
-    return jsonify(
+    return make_response(jsonify(
         {
             "message": "Registration started. Please confirm via email.",
             "confirm_link":f"http://localhost:5000/api/auth/confirm/{token}",
             "token": token
-        }), 201
+        }), 201)
 
 # ========== CONFIRM ==========
 @auth_bp.route('/confirm/<token>', methods=['GET'])
 def confirm_email(token: str) -> Response:
     pending_user = pending_col.find_one({"token": token})
     if not pending_user:
-        return jsonify({"message": "Invalid or expired token"}), 400
+        return make_response(jsonify({"message": "Invalid or expired token"}), 400)
 
     # Create real user
     new_user = User(
@@ -78,7 +77,7 @@ def confirm_email(token: str) -> Response:
     # Delete from pending
     pending_col.delete_one({"_id": pending_user["_id"]})
 
-    return jsonify({"message": "✅ Email confirmed. Account created."}), 201
+    return make_response(jsonify({"message": "✅ Email confirmed. Account created."}), 201)
 
 # ========== LOGOUT ==========
 @auth_bp.route('/logout', methods=['POST', 'GET', 'DELETE', 'PUT', 'PATCH'])

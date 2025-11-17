@@ -3,6 +3,7 @@ from DB.connect import user_col,waiting_col, PyMongoError, InsertOneResult
 from hashlib import sha256
 from bson import ObjectId
 from pymongo.errors import DuplicateKeyError
+# from threading import Thread
 
 
 # ================= Add User =================
@@ -64,21 +65,35 @@ def change_user_status(user_id: ObjectId, status: str) -> bool:
         return False
 
 # ================= Find Opponent =================
-def find_opponent(elo:int,wait:int=3600)-> ObjectId | None:
+def find_opponent(user_id: ObjectId, user_elo: int) -> ObjectId | None:
     try:
-        # wait for 'wait' seconds to find opponent
-        
-        result = waiting_col.find_one(filter={
-            "elo": {"$gte": elo - 100, "$lte": elo + 100}
-        })
+        pipeline = [
+            {
+                "$match": {
+                    "user_id": {"$ne": user_id},
+                    "elo": {"$gte": user_elo - 50, "$lte": user_elo + 50}
+                }
+            },
+            {
+                "$addFields": {
+                    "elo_diff": {"$abs": {"$subtract": ["$elo", user_elo]}}
+                }
+            },
+            {
+                "$sort": {"elo_diff": 1}
+            },
+            {"$limit": 1}
+        ]
+
+        result = list(waiting_col.aggregate(pipeline))
 
         if result:
-            print(f"[+] Found opponent: {result}")
-            return result["_id"]
+            print(f"[+] Opponent found: {result[0]['user_id']}")
+            return result[0]["user_id"]
 
         print("[-] No idle opponent found.")
         return None
 
     except PyMongoError as e:
-        print(f"❌ Error finding opponent: {e}")
+        print(f"❌ Error in find_opponent: {e}")
         return None
