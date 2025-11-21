@@ -2,3 +2,5 @@
 **/__pycache__/**
 **demo**.py
 TODO.md
+test_*
+**/__init**.py
