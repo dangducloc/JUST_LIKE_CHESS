@@ -1,6 +1,6 @@
-from flask import Blueprint, request, jsonify, make_response, Response
-from flask_socketio import emit, join_room, leave_room
-from Models.user_model import User, UserStatus
+from flask import Blueprint, request, jsonify, Response
+from flask_socketio import emit, join_room, leave_room, SocketIO
+from Models.user_model import UserStatus
 from controllers.users.users_controller import change_user_status, find_opponent
 from bson import ObjectId
 from DB.connect import user_col, waiting_col
@@ -72,16 +72,16 @@ def matching() -> Response:
     return jsonify({"message": "No opponent found, please wait"}), 202
 
 # WebSocket events for matching
-def init_socket_events(socketio):
+def init_socket_events(socketio:SocketIO)->None:
     @socketio.on('join_queue')
-    def handle_join_queue(data):
-        user_id = data.get('user_id')
+    def handle_join_queue(data:any)-> None:
+        user_id: str = data.get('user_id')
         if not user_id:
             emit('error', {'message': 'User not logged in'})
             return
 
-        uid = ObjectId(user_id)
-        user_doc = user_col.find_one({"_id": uid})
+        uid: ObjectId = ObjectId(user_id)
+        user_doc: dict|None = user_col.find_one({"_id": uid})
         if not user_doc:
             emit('error', {'message': 'User not found'})
             return
@@ -90,10 +90,10 @@ def init_socket_events(socketio):
             emit('error', {'message': 'User not idle'})
             return
 
-        user_elo = user_doc.get("elo", 0)
+        user_elo: int = user_doc.get("elo", 0)
 
         # Check if already in queue
-        existing_wait = waiting_col.find_one({"user_id": uid})
+        existing_wait: dict|None = waiting_col.find_one({"user_id": uid})
         if existing_wait:
             emit('waiting', {'message': 'Already in queue'})
             return
@@ -103,7 +103,7 @@ def init_socket_events(socketio):
         join_room(str(uid))  # Join user's room for private messages
 
         # Try to find opponent
-        opponent_id = find_opponent(uid, user_elo)
+        opponent_id: ObjectId|None = find_opponent(uid, user_elo)
         if opponent_id:
             # Update status
             change_user_status(uid, UserStatus.PLAYING.value)
@@ -119,12 +119,12 @@ def init_socket_events(socketio):
             emit('waiting', {'message': 'Waiting for opponent'})
 
     @socketio.on('leave_queue')
-    def handle_leave_queue(data):
-        user_id = data.get('user_id')
+    def handle_leave_queue(data: any)-> None:
+        user_id: str = data.get('user_id')
         if not user_id:
             return
 
-        uid = ObjectId(user_id)
+        uid: ObjectId = ObjectId(user_id)
         waiting_col.delete_one({"user_id": uid})
         leave_room(str(uid))
         emit('left_queue', {'message': 'Left the queue'})

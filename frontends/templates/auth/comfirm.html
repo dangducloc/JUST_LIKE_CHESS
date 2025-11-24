@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Token Confirmation</title>
+    <link rel="stylesheet" href="../css/comfirm.css" />
+</head>
+<body class="chessboard-background">
+    <div class="auth-container">
+        <h2>Token Confirmation</h2>
+        <form id="confirm-form" aria-label="Token confirmation form">
+            <label for="token">Your token here:</label>
+            <input type="text" id="token" name="token" required aria-required="true" aria-describedby="token-desc" />
+            <p id="token-desc">Please confirm your token that we sent to your email</p>
+            <button type="submit" id="confirmationbtn">Confirm</button>
+        </form>
+    </div>
+<script src="../js/auth.js"></script>
+</body>
+</html>

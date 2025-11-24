@@ -1,4 +1,4 @@
-from flask import Blueprint, request
+from flask import Blueprint
 from api.routes.auth import auth_bp
 from api.routes.matching import matching_bp, init_socket_events
 

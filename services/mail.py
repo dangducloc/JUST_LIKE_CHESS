@@ -1,15 +1,14 @@
 from flask_mail import Mail, Message
 from flask import current_app
 
-mail = Mail()
+mail: Mail = Mail()
 
 def send_confirmation_email(to_email: str, token: str) -> None:
-    confirm_url = f"http://localhost:5000/api/auth/confirm/{token}"
-    subject = "Confirm your registration"
-    body = f"Hello,\n\nPlease confirm your account by clicking the link:\n{confirm_url}\n\nThank you!"
+    subject: str = "Confirm your registration"
+    body: str = f"Hello,\n\nPlease confirm your account by using this token:\n{token}\n\nThank you!"
     
     try:
-        msg = Message(subject=subject, recipients=[to_email], body=body)
+        msg: Message = Message(subject=subject, recipients=[to_email], body=body)
         mail.send(msg)
         print(f"📩 Confirmation email sent to {to_email}")
     except Exception as e:

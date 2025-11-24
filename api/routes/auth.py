@@ -41,19 +41,20 @@ def register() -> Response:
         return make_response(jsonify({"message": "Email already registered"}), 409)
 
     token = secrets.token_urlsafe(32)
-
+    from datetime import datetime, timedelta
     pending_col.insert_one({
         "name": name,
         "mail": mail,
         "passwd": passwd,
-        "token": token
+        "token": token,
+        "expireAt": datetime.utcnow() + timedelta(minutes=15)
     })
 
     send_confirmation_email(mail, token)
 
     return make_response(jsonify(
         {
-            "message": "Registration started. Please confirm via email.",
+            "message": "Registration started. Please confirm via email in the next 15 minutes.",
             "confirm_link":f"http://localhost:5000/api/auth/confirm/{token}",
             "token": token
         }), 201)
