@@ -73,6 +73,11 @@ def matching() -> Response:
 
 # WebSocket events for matching
 def init_socket_events(socketio:SocketIO)->None:
+    @socketio.on('disconnect')
+    def on_disconnect():
+        # remove from DB waiting queue
+        waiting_col.delete_one({"user_id": ObjectId(request.cookies.get('user_id'))})
+
     @socketio.on('join_queue')
     def handle_join_queue(data:any)-> None:
         user_id: str = data.get('user_id')
