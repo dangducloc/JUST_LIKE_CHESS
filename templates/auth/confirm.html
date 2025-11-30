@@ -1,1 +1,40 @@
-confrim
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Email Confirmation - Chess App</title>
+    <link rel="stylesheet" href="/static/css/auth/auth.css">
+</head>
+<body>
+    <div class="auth-container">
+        <div class="auth-card">
+            <div class="auth-header">
+                <h1>Email Confirmation</h1>
+                <p>Enter your confirmation token to verify your email address</p>
+            </div>
+
+            <form id="manualConfirmForm" class="auth-form">
+                <div class="form-group">
+                    <label for="tokenInput">Confirmation Token</label>
+                    <input type="text" id="tokenInput" name="token" placeholder="Enter your confirmation token" required>
+                    <div class="error-message" id="tokenError"></div>
+                </div>
+                <button type="submit" class="btn btn-primary" id="confirmBtn">
+                    <span class="btn-text">Confirm Email</span>
+                    <div class="btn-spinner" id="btnSpinner"></div>
+                </button>
+            </form>
+
+            <div class="auth-links">
+                <p>Didn't receive the token? <a href="/register" class="link">Register again</a></p>
+                <p>Already confirmed? <a href="/login" class="link">Go to Login</a></p>
+            </div>
+
+            <div id="message" class="message"></div>
+        </div>
+    </div>
+
+    <script src="/static/js/auth/confirm.js"></script>
+</body>
+</html>
