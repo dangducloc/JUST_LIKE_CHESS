@@ -103,7 +103,7 @@ def register():
 
     # Generate secure token
     token = secrets.token_urlsafe(32)
-    expire_at = datetime.utcnow() + timedelta(hours=24)
+    expire_at = datetime.utcnow() + timedelta(seconds=10)
 
     # Store pending user
     pending_col.insert_one({
