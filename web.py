@@ -3,6 +3,7 @@ from flask import Flask
 from flask_mail import Mail
 from flask_cors import CORS
 from api.routes.index import api
+from frontends.routes.index import fe_bp
 from utils.validators import register_error_handlers
 from DB.connect import db_instance
 import os
@@ -72,7 +73,8 @@ def create_app(config_name='default'):
     
     # Register blueprints
     app.register_blueprint(api, url_prefix='/api')
-    
+    app.register_blueprint(fe_bp, url_prefix='/')
+
     # Register error handlers
     register_error_handlers(app)
     
@@ -99,7 +101,7 @@ if __name__ == '__main__':
     app = create_app(env)
     
     host = os.getenv('HOST', '0.0.0.0')
-    port = int(os.getenv('PORT', 5000))
+    port = 5000
     
     app.run(
         host=host,
