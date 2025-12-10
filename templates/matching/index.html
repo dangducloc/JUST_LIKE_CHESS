@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Find Match - Chess App</title>
+    <link rel="stylesheet" href="/static/css/matching/matching.css">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <div class="logo">♔ Chess App</div>
+            <div class="user-info">
+                <span id="userName">Loading...</span>
+                <span id="userElo" class="elo-badge">ELO: ---</span>
+                <button class="btn-logout" onclick="logout()">Logout</button>
+            </div>
+        </header>
+
+        <main class="main-content">
+            <!-- Idle State -->
+            <div id="idleState" class="state-container">
+                <div class="welcome-card">
+                    <h1>Ready to Play?</h1>
+                    <p>Find an opponent and start your chess game</p>
+                    <button id="findMatchBtn" class="btn btn-primary btn-large">
+                        🎯 Find Match
+                    </button>
+                </div>
+
+                <!-- User Stats -->
+                <div class="stats-card">
+                    <h2>Your Statistics</h2>
+                    <div id="userStats" class="stats-grid">
+                        <div class="stat-item">
+                            <span class="stat-label">Total Games</span>
+                            <span class="stat-value" id="totalGames">0</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Wins</span>
+                            <span class="stat-value" id="wins">0</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Losses</span>
+                            <span class="stat-value" id="losses">0</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Win Rate</span>
+                            <span class="stat-value" id="winRate">0%</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Waiting State -->
+            <div id="waitingState" class="state-container" style="display: none;">
+                <div class="waiting-card">
+                    <div class="spinner-large"></div>
+                    <h2>Searching for Opponent...</h2>
+                    <p>ELO Range: <span id="eloRange">---</span></p>
+                    <p>Queue Position: <span id="queuePosition">---</span></p>
+                    <p>Wait Time: <span id="waitTime">0s</span></p>
+                    <button id="cancelMatchBtn" class="btn btn-secondary">
+                        Cancel Search
+                    </button>
+                </div>
+            </div>
+
+            <!-- Matched State -->
+            <div id="matchedState" class="state-container" style="display: none;">
+                <div class="matched-card">
+                    <div class="success-icon">✓</div>
+                    <h2>Match Found!</h2>
+                    <div class="opponent-info">
+                        <h3>Opponent</h3>
+                        <p class="opponent-name" id="opponentName">---</p>
+                        <p class="opponent-elo">ELO: <span id="opponentElo">---</span></p>
+                    </div>
+                    <div class="match-info">
+                        <p>You are playing as: <span class="color-badge" id="yourColor">---</span></p>
+                    </div>
+                    <button id="startGameBtn" class="btn btn-primary btn-large">
+                        Start Game
+                    </button>
+                </div>
+            </div>
+
+            <!-- Recent Matches -->
+            <div class="recent-matches">
+                <h2>Recent Matches</h2>
+                <div id="matchHistory" class="match-list">
+                    <p class="loading">Loading matches...</p>
+                </div>
+            </div>
+
+            <!-- Leaderboard -->
+            <div class="leaderboard">
+                <h2>🏆 Top Players</h2>
+                <div id="leaderboardList" class="leaderboard-list">
+                    <p class="loading">Loading leaderboard...</p>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="/static/js/matching/matching.js"></script>
+</body>
+</html>

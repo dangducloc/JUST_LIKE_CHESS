@@ -39,9 +39,9 @@ document.getElementById('loginForm').addEventListener('submit', async function(e
 
         if (response.ok) {
             showMessage('Login successful! Redirecting...', 'success');
-            // Redirect to home page or dashboard
+            // Redirect to home page
             setTimeout(() => {
-                window.location.href = '/'; // Adjust redirect URL as needed
+                window.location.href = '/home'; 
             }, 1000);
         } else {
             showMessage(result.message || 'Login failed', 'error');
