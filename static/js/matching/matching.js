@@ -1,8 +1,13 @@
-// Matching Page JavaScript
-let currentState = 'idle'; // idle, waiting, matched
+// Matching Page JavaScript - Enhanced with auto-redirect
+let currentState = 'idle';
 let pollingInterval = null;
 let waitStartTime = null;
 let currentMatchId = null;
+let autoRedirectTimeout = null;
+
+// Configuration
+const AUTO_REDIRECT_DELAY = 3000; // 3 seconds delay before auto-redirect
+const POLLING_INTERVAL = 2000; // Poll every 2 seconds
 
 // DOM Elements
 const idleState = document.getElementById('idleState');
@@ -30,7 +35,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 function setupEventListeners() {
     findMatchBtn.addEventListener('click', findMatch);
     cancelMatchBtn.addEventListener('click', cancelMatch);
-    startGameBtn.addEventListener('click', startGame);
+    startGameBtn.addEventListener('click', () => startGame(false)); // Manual start
 }
 
 // Load User Info
@@ -45,7 +50,6 @@ async function loadUserInfo() {
             document.getElementById('userName').textContent = data.name;
             document.getElementById('userElo').textContent = `ELO: ${data.elo}`;
         } else {
-            // Not logged in, redirect
             window.location.href = '/login';
         }
     } catch (error) {
@@ -189,7 +193,7 @@ async function findMatch() {
         
         if (data.status === 'matched') {
             // Immediately found a match
-            showMatchedState(data);
+            showMatchedState(data, true); // Pass autoRedirect = true
         } else if (data.status === 'waiting') {
             // Added to queue
             showWaitingState(data);
@@ -217,6 +221,7 @@ async function cancelMatch() {
         
         if (response.ok) {
             stopPolling();
+            clearAutoRedirect();
             showIdleState();
         }
     } catch (error) {
@@ -232,7 +237,7 @@ function startPolling() {
     pollingInterval = setInterval(async () => {
         await checkMatch();
         updateWaitTime();
-    }, 2000); // Poll every 2 seconds
+    }, POLLING_INTERVAL);
 }
 
 function stopPolling() {
@@ -249,7 +254,7 @@ function updateWaitTime() {
     }
 }
 
-// Check Match Status
+// Check Match Status (called by polling)
 async function checkMatch() {
     try {
         const response = await fetch('/api/matching/check_match', {
@@ -261,7 +266,7 @@ async function checkMatch() {
             
             if (data.status === 'matched') {
                 stopPolling();
-                showMatchedState(data);
+                showMatchedState(data, true); // Auto-redirect enabled
             }
         }
     } catch (error) {
@@ -280,7 +285,8 @@ async function checkCurrentMatch() {
             const data = await response.json();
             
             if (data.status === 'matched') {
-                showMatchedState(data);
+                // Found existing match on page load
+                showMatchedState(data, true); // Auto-redirect enabled
             } else if (data.status === 'waiting') {
                 showWaitingState(data);
                 startPolling();
@@ -319,7 +325,7 @@ function showWaitingState(data) {
     }
 }
 
-function showMatchedState(data) {
+function showMatchedState(data, autoRedirect = false) {
     currentState = 'matched';
     idleState.style.display = 'none';
     waitingState.style.display = 'none';
@@ -333,18 +339,81 @@ function showMatchedState(data) {
     const colorBadge = document.getElementById('yourColor');
     colorBadge.textContent = data.your_color;
     colorBadge.className = `color-badge ${data.your_color}`;
+    
+    // Auto-redirect if enabled
+    if (autoRedirect) {
+        startAutoRedirectCountdown();
+    }
+}
+
+// Auto-redirect functionality
+function startAutoRedirectCountdown() {
+    let countdown = Math.floor(AUTO_REDIRECT_DELAY / 1000);
+    
+    // Update button text with countdown
+    updateStartButtonCountdown(countdown);
+    
+    // Create countdown interval
+    const countdownInterval = setInterval(() => {
+        countdown--;
+        if (countdown > 0) {
+            updateStartButtonCountdown(countdown);
+        } else {
+            clearInterval(countdownInterval);
+        }
+    }, 1000);
+    
+    // Set timeout for actual redirect
+    autoRedirectTimeout = setTimeout(() => {
+        clearInterval(countdownInterval);
+        startGame(true); // Auto start
+    }, AUTO_REDIRECT_DELAY);
+}
+
+function updateStartButtonCountdown(seconds) {
+    if (startGameBtn) {
+        startGameBtn.textContent = `Starting in ${seconds}s... (Click to start now)`;
+        startGameBtn.classList.add('countdown');
+    }
+}
+
+function clearAutoRedirect() {
+    if (autoRedirectTimeout) {
+        clearTimeout(autoRedirectTimeout);
+        autoRedirectTimeout = null;
+    }
+    
+    // Reset button text
+    if (startGameBtn) {
+        startGameBtn.textContent = 'Start Game';
+        startGameBtn.classList.remove('countdown');
+    }
 }
 
 // Start Game
-function startGame() {
+function startGame(isAutoStart = false) {
     if (currentMatchId) {
-        // Redirect to game page (you'll need to create this)
+        // Clear auto-redirect if user clicked manually
+        if (!isAutoStart) {
+            clearAutoRedirect();
+        }
+        
+        console.log(`${isAutoStart ? 'Auto-' : 'Manual '}starting game:`, currentMatchId);
+        
+        // Redirect to game page
         window.location.href = `/game/${currentMatchId}`;
+    } else {
+        console.error('No match ID available');
+        alert('Error: No match found. Please try again.');
     }
 }
 
 // Logout
 async function logout() {
+    // Clear any pending redirects
+    clearAutoRedirect();
+    stopPolling();
+    
     try {
         const response = await fetch('/api/auth/logout', {
             method: 'POST',
@@ -358,3 +427,52 @@ async function logout() {
         console.error('Logout error:', error);
     }
 }
+
+// Cleanup on page unload
+window.addEventListener('beforeunload', () => {
+    stopPolling();
+    clearAutoRedirect();
+});
+
+// Add visual feedback styles dynamically
+const style = document.createElement('style');
+style.textContent = `
+    .btn.countdown {
+        animation: pulse 1s infinite;
+        background: linear-gradient(135deg, #10b981, #059669) !important;
+    }
+    
+    @keyframes pulse {
+        0%, 100% {
+            transform: scale(1);
+            box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
+        }
+        50% {
+            transform: scale(1.05);
+            box-shadow: 0 8px 25px rgba(16, 185, 129, 0.6);
+        }
+    }
+    
+    .matched-card .countdown-notice {
+        margin-top: 1rem;
+        padding: 0.75rem;
+        background: #d1fae5;
+        border: 2px solid #10b981;
+        border-radius: 8px;
+        color: #065f46;
+        font-weight: 600;
+        animation: fadeIn 0.3s ease-out;
+    }
+    
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(-10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+`;
+document.head.appendChild(style);

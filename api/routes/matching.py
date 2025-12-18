@@ -1,5 +1,5 @@
 # api/routes/matching.py
-from flask import Blueprint, request, jsonify, Response
+from flask import Blueprint, request, jsonify, make_response
 from Models.user_model import User, UserStatus
 from Models.match_model import Match
 from controllers.users.users_controller import change_user_status
@@ -310,8 +310,8 @@ def check_match():
         if match:
             opponent_id = match['black'] if match['white'] == user_id else match['white']
             opponent = user_col.find_one({"_id": opponent_id})
-            
-            return jsonify({
+            # cookie
+            res = make_response(jsonify({
                 "status": "matched",
                 "match_id": str(match['_id']),
                 "opponent": {
@@ -320,7 +320,9 @@ def check_match():
                     "elo": opponent.get("elo", 1200)
                 },
                 "your_color": "white" if match['white'] == user_id else "black"
-            }), 200
+            }), 200)
+            res.set_cookie('match_id', str(match['_id']), httponly=True, samesite='Lax')
+            return res
         
         # Check if still in queue
         in_queue = waiting_col.find_one({"user_id": user_id})

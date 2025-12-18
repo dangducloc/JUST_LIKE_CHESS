@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chess Game - {{ match_id }}</title>
+    
+    <!-- Chessboard CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/chessboard-js/1.0.0/chessboard-1.0.0.min.css">
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/static/css/game/game.css">
+    
+    <!-- jQuery (required by chessboard.js) -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    
+    <!-- Chess.js - Game logic -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js"></script>
+    
+    <!-- Chessboard.js - Board UI -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/chessboard-js/1.0.0/chessboard-1.0.0.min.js"></script>
+    
+    <!-- Socket.IO Client -->
+    <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+</head>
+<body>
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" class="overlay">
+        <div class="overlay-content">
+            <div class="spinner-large"></div>
+            <h2>Loading game...</h2>
+        </div>
+    </div>
+    
+    <!-- Connection Status Banner -->
+    <div id="connectionStatus" class="connection-banner hidden">
+        <span class="status-icon">⚠️</span>
+        <span class="status-text">Connecting...</span>
+    </div>
+    
+    <div class="game-container">
+        <!-- Header -->
+        <header class="game-header">
+            <div class="header-left">
+                <button class="btn-back" onclick="window.location.href='/home'">
+                    ← Back to Lobby
+                </button>
+            </div>
+            <div class="header-center">
+                <h1>♔ Chess Game</h1>
+                <div class="match-id">Match ID: <span id="matchIdDisplay">{{ match_id }}</span></div>
+            </div>
+            <div class="header-right">
+                <div class="connection-indicator" id="connectionIndicator">
+                    <span class="dot"></span>
+                    <span class="text">Connecting...</span>
+                </div>
+            </div>
+        </header>
+        
+        <div class="game-content">
+            <!-- Left Sidebar - Opponent Info & Controls -->
+            <aside class="sidebar sidebar-left">
+                <!-- Opponent Info -->
+                <div class="player-card opponent-card">
+                    <div class="player-avatar">
+                        <div class="avatar-icon">👤</div>
+                        <div class="connection-status" id="opponentStatus">
+                            <span class="status-dot offline"></span>
+                        </div>
+                    </div>
+                    <div class="player-info">
+                        <h3 class="player-name" id="opponentName">Opponent</h3>
+                        <div class="player-elo">
+                            <span class="elo-label">ELO:</span>
+                            <span class="elo-value" id="opponentElo">---</span>
+                        </div>
+                        <div class="player-color" id="opponentColor">
+                            <span class="color-piece">♟</span>
+                        </div>
+                    </div>
+                    <div class="captured-pieces" id="opponentCaptured">
+                        <!-- Captured pieces will be added here -->
+                    </div>
+                </div>
+                
+                <!-- Game Controls -->
+                <div class="game-controls">
+                    <h4>Game Controls</h4>
+                    <button class="btn btn-danger" id="resignBtn">
+                        🏳️ Resign
+                    </button>
+                    <button class="btn btn-warning" id="offerDrawBtn">
+                        🤝 Offer Draw
+                    </button>
+                    <button class="btn btn-secondary" id="flipBoardBtn">
+                        🔄 Flip Board
+                    </button>
+                </div>
+                
+                <!-- Game Status -->
+                <div class="game-status-card">
+                    <h4>Game Status</h4>
+                    <div class="status-item">
+                        <span class="label">Turn:</span>
+                        <span class="value" id="turnIndicator">White</span>
+                    </div>
+                    <div class="status-item">
+                        <span class="label">Move:</span>
+                        <span class="value" id="moveNumber">1</span>
+                    </div>
+                    <div class="status-item">
+                        <span class="label">Status:</span>
+                        <span class="value status-ongoing" id="gameStatus">Ongoing</span>
+                    </div>
+                </div>
+            </aside>
+            
+            <!-- Center - Chessboard -->
+            <main class="board-area">
+                <!-- Your Info (above board) -->
+                <div class="player-card your-card your-card-top">
+                    <div class="player-avatar small">
+                        <div class="avatar-icon">👤</div>
+                    </div>
+                    <div class="player-info">
+                        <h3 class="player-name" id="yourName">You</h3>
+                        <div class="player-elo">
+                            ELO: <span id="yourElo">---</span>
+                        </div>
+                        <div class="player-color" id="yourColor">
+                            <span class="color-piece">♟</span>
+                        </div>
+                    </div>
+                    <div class="captured-pieces small" id="yourCaptured">
+                        <!-- Your captured pieces -->
+                    </div>
+                </div>
+                
+                <!-- Chessboard -->
+                <div class="board-wrapper">
+                    <div id="chessboard"></div>
+                    <div class="board-overlay" id="boardOverlay">
+                        <div class="overlay-message" id="overlayMessage"></div>
+                    </div>
+                </div>
+                
+                <!-- Move Indicator -->
+                <div class="move-indicator" id="moveIndicator">
+                    <div class="indicator-content">
+                        <span class="indicator-icon">⏳</span>
+                        <span class="indicator-text">Waiting for opponent...</span>
+                    </div>
+                </div>
+            </main>
+            
+            <!-- Right Sidebar - Move History & Chat -->
+            <aside class="sidebar sidebar-right">
+                <!-- Move History -->
+                <div class="move-history-card">
+                    <h4>Move History</h4>
+                    <div class="move-history" id="moveHistory">
+                        <p class="no-moves">No moves yet</p>
+                    </div>
+                </div>
+                
+                <!-- Chat -->
+                <div class="chat-card">
+                    <h4>Chat</h4>
+                    <div class="chat-messages" id="chatMessages">
+                        <p class="chat-info">Chat with your opponent</p>
+                    </div>
+                    <div class="chat-input-area">
+                        <input 
+                            type="text" 
+                            id="chatInput" 
+                            placeholder="Type a message..."
+                            maxlength="200"
+                        >
+                        <button class="btn-send" id="sendChatBtn">📤</button>
+                    </div>
+                </div>
+            </aside>
+        </div>
+    </div>
+    
+    <!-- Game End Modal -->
+    <div id="gameEndModal" class="modal hidden">
+        <div class="modal-content game-end-content">
+            <div class="result-icon" id="resultIcon">🏆</div>
+            <h2 class="result-title" id="resultTitle">Game Over</h2>
+            <p class="result-message" id="resultMessage"></p>
+            
+            <div class="result-details">
+                <div class="elo-changes" id="eloChanges">
+                    <!-- ELO changes will be shown here -->
+                </div>
+            </div>
+            
+            <div class="modal-actions">
+                <button class="btn btn-primary" onclick="window.location.href='/home'">
+                    Back to Lobby
+                </button>
+                <button class="btn btn-secondary" onclick="location.reload()">
+                    View Game
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Draw Offer Modal -->
+    <div id="drawOfferModal" class="modal hidden">
+        <div class="modal-content">
+            <h3>🤝 Draw Offer</h3>
+            <p>Your opponent offers a draw. Do you accept?</p>
+            <div class="modal-actions">
+                <button class="btn btn-success" id="acceptDrawBtn">Accept</button>
+                <button class="btn btn-danger" id="declineDrawBtn">Decline</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Hidden data for JS -->
+    <input type="hidden" id="matchId" value="{{ match_id }}">
+    
+    <!-- Custom Game Script -->
+    <script src="/static/js/game/game.js"></script>
+</body>
+</html>

@@ -71,17 +71,27 @@
                 <div class="matched-card">
                     <div class="success-icon">✓</div>
                     <h2>Match Found!</h2>
+                    
                     <div class="opponent-info">
                         <h3>Opponent</h3>
                         <p class="opponent-name" id="opponentName">---</p>
                         <p class="opponent-elo">ELO: <span id="opponentElo">---</span></p>
                     </div>
+                    
                     <div class="match-info">
                         <p>You are playing as: <span class="color-badge" id="yourColor">---</span></p>
                     </div>
+                    
+                    <!-- Auto-redirect notice will be added here dynamically -->
+                    <div id="autoRedirectNotice"></div>
+                    
                     <button id="startGameBtn" class="btn btn-primary btn-large">
                         Start Game
                     </button>
+                    
+                    <p style="margin-top: 1rem; font-size: 0.9rem; color: #6b7280;">
+                        The game will start automatically, or click the button to start now
+                    </p>
                 </div>
             </div>
 
