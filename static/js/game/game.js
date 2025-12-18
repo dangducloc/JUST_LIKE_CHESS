@@ -176,7 +176,7 @@ function initializeSocket() {
     });
     
     socket.on('opponent_move', (data) => {
-        console.log('♟️ Opponent moved:', data.move);
+        console.log('[+] Opponent moved:', data.move);
         
         // Make the move on the board
         const move = game.move(data.move);
@@ -204,13 +204,13 @@ function initializeSocket() {
     
     // ===== GAME END EVENTS =====
     socket.on('game_ended', (data) => {
-        console.log('🏁 Game ended:', data);
+        console.log(' Game ended:', data);
         gameActive = false;
         showGameEndModal(data);
     });
     
     socket.on('player_resigned', (data) => {
-        console.log('🏳️ Player resigned:', data);
+        console.log(' Player resigned:', data);
         gameActive = false;
         showGameEndModal({
             result: data.result,

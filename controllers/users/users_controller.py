@@ -12,10 +12,10 @@ def add_user(user: User) -> bool:
         print(f"✅ User inserted with id: {result.inserted_id}")
         return True
     except DuplicateKeyError:
-        print(f"❌ Email {user.mail} is used")
+        print(f"[-] Email {user.mail} is used")
         return False
     except PyMongoError as e:
-        print(f"❌ Error inserting user: {e}")
+        print(f"[-] Error inserting user: {e}")
         return False
 
 
@@ -36,7 +36,7 @@ def find_user(user_mail: str, user_passwd: str) -> ObjectId | None:
         return None
 
     except PyMongoError as e:
-        print(f"❌ Error finding user: {e}")
+        print(f"[-] Error finding user: {e}")
         return None
 
 
@@ -46,7 +46,7 @@ def change_user_status(user_id: ObjectId, status: str) -> bool:
     change to one of this (idle, playing, offline).
     """
     if status not in [s.value for s in UserStatus]:
-        print(f"❌ Invalid status: {status}")
+        print(f"[-] Invalid status: {status}")
         return False
 
     try:
@@ -60,7 +60,7 @@ def change_user_status(user_id: ObjectId, status: str) -> bool:
         print(f"✅ User {user_id} status changed to {status}")
         return True
     except PyMongoError as e:
-        print(f"❌ Error updating user status: {e}")
+        print(f"[-] Error updating user status: {e}")
         return False
 
 # ================= Find Opponent =================
@@ -80,5 +80,5 @@ def find_opponent(elo:int,wait:int=3600)-> ObjectId | None:
         return None
 
     except PyMongoError as e:
-        print(f"❌ Error finding opponent: {e}")
+        print(f"[-] Error finding opponent: {e}")
         return None

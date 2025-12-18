@@ -60,7 +60,7 @@ class Database:
             
             # Verify connection
             self._client.admin.command("ping")
-            logger.info("✅ Connected to MongoDB")
+            logger.info("Connected to MongoDB")
             
             # Get database
             self._db = self._client[DBConfig.DB_NAME]
@@ -69,10 +69,10 @@ class Database:
             self._setup_collections()
             
         except ConnectionFailure as e:
-            logger.error(f"❌ MongoDB connection failed: {e}")
+            logger.error(f"MongoDB connection failed: {e}")
             raise
         except PyMongoError as e:
-            logger.error(f"❌ MongoDB error: {e}")
+            logger.error(f"MongoDB error: {e}")
             raise
     
     def _setup_collections(self):
@@ -98,10 +98,10 @@ class Database:
             self.waiting_col.create_index("elo")
             self.waiting_col.create_index("created_at")
             
-            logger.info("✅ Database indexes created")
+            logger.info("Database indexes created")
             
         except PyMongoError as e:
-            logger.warning(f"⚠️ Index creation warning: {e}")
+            logger.warning(f"Index creation warning: {e}")
     
     @property
     def client(self) -> MongoClient:

@@ -98,11 +98,16 @@
             <!-- Recent Matches -->
             <div class="recent-matches">
                 <h2>Recent Matches</h2>
-                <div id="matchHistory" class="match-list">
-                    <p class="loading">Loading matches...</p>
+                <div id="matchHistory" class="match-list">...</div>
+                
+                <div class="pagination-nav">
+                    <!-- <div class="pagination-info">1-5 of 20</div> -->
+                    <div class="pagination-buttons">
+                        <button class="pagination-btn" id="prevPageBtn" onclick="prevPage()"> < </button>
+                        <button class="pagination-btn" id="nextPageBtn" onclick="nextPage()"> > </button>
+                    </div>
                 </div>
             </div>
-
             <!-- Leaderboard -->
             <div class="leaderboard">
                 <h2>🏆 Top Players</h2>
@@ -110,9 +115,11 @@
                     <p class="loading">Loading leaderboard...</p>
                 </div>
             </div>
+            
         </main>
     </div>
 
     <script src="/static/js/matching/matching.js"></script>
+    <script src="/static/js/matching/recent_matches.js"></script>
 </body>
 </html>

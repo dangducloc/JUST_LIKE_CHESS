@@ -107,7 +107,12 @@ function displayMatchHistory(matches) {
         return `
             <div class="match-item">
                 <div>
-                    <div class="match-opponent">${match.opponent_name} (${match.opponent_elo})</div>
+                    <div class="match-opponent">
+                    ${match.opponent_name} <span style="font-size: 0.85rem; color: #6b7280;">(${match.opponent_elo}) </span><br>
+                    Started at: <span style="font-size: 0.85rem; color: #6b7280;">${new Date(match.start).toLocaleDateString()}</span>
+                    &nbsp; &nbsp; &nbsp;&nbsp;&nbsp;
+                    Ended at: <span style="font-size: 0.85rem; color: #6b7280;">${new Date(match.end).toLocaleDateString()}</span>
+                    </div>
                     <div style="font-size: 0.85rem; color: #6b7280;">
                         You played as ${match.your_color}
                     </div>

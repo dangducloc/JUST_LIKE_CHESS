@@ -283,9 +283,8 @@ def is_valid_player(match_id: ObjectId, user_id: ObjectId) -> tuple[bool, str | 
         match = match_col.find_one({"_id": match_id})
         if not match:
             return False, "Match not found"
-        
-        if match["status"] != "ongoing":
-            return False, "Match is not ongoing"
+        # if match["status"] != "ongoing":
+        #     return False, "Match is not ongoing"
         
         if user_id not in [match["white"], match["black"]]:
             return False, "You are not a player in this match"
