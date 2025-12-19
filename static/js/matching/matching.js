@@ -67,9 +67,10 @@ async function loadStats() {
         if (response.ok) {
             const stats = await response.json();
             document.getElementById('totalGames').textContent = stats.total_games;
+            document.getElementById('draws').textContent = stats.draws;
             document.getElementById('wins').textContent = stats.wins;
             document.getElementById('losses').textContent = stats.losses;
-            document.getElementById('winRate').textContent = `${stats.win_rate}%`;
+            document.getElementById('winRate').textContent = `${parseFloat(stats.win_rate.toFixed(1)).toPrecision()}%`;
         }
     } catch (error) {
         console.error('Failed to load stats:', error);
@@ -175,7 +176,7 @@ function displayLeaderboard(players) {
                 <div class="player-info">
                     <div class="player-name">${player.name}</div>
                     <div class="player-stats">
-                        ELO: ${player.elo} | Games: ${player.games_played} | Win Rate: ${player.win_rate}%
+                        ELO: ${player.elo} | Games: ${player.games_played} | Win Rate: ${parseFloat(player.win_rate.toFixed(1)).toPrecision()}%
                     </div>
                 </div>
             </div>

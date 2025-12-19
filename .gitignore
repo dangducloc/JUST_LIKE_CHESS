@@ -6,5 +6,6 @@ TODO.md
 .vscode/settings.json
 test/__init__.py
 Models/__init__.py
-test/test_websocket.py
-test/demo_matching.py
+test/*
+
+stockfish*
