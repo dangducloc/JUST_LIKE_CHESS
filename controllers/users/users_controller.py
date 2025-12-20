@@ -9,7 +9,7 @@ from pymongo.errors import DuplicateKeyError
 def add_user(user: User) -> bool:
     try:
         result: InsertOneResult = user_col.insert_one(user.to_dict())
-        print(f"✅ User inserted with id: {result.inserted_id}")
+        print(f"[+] User inserted with id: {result.inserted_id}")
         return True
     except DuplicateKeyError:
         print(f"[-] Email {user.mail} is used")
@@ -55,9 +55,9 @@ def change_user_status(user_id: ObjectId, status: str) -> bool:
             {"$set": {"status": status}}
         )
         if result.matched_count == 0:
-            print(f"⚠️ No user found with id {user_id}")
+            print(f"[+] No user found with id {user_id}")
             return False
-        print(f"✅ User {user_id} status changed to {status}")
+        print(f"[+] User {user_id} status changed to {status}")
         return True
     except PyMongoError as e:
         print(f"[-] Error updating user status: {e}")

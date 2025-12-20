@@ -277,7 +277,7 @@ def register_socket_events(socketio):
                 white_user = user_col.find_one({'_id': match_data['white']})
                 black_user = user_col.find_one({'_id': match_data['black']})
                 
-                logger.info(f"🏁 Game ended: {match_id} - Result: {result} - Reason: {reason}")
+                logger.info(f"[+] Game ended: {match_id} - Result: {result} - Reason: {reason}")
                 
                 # Broadcast to both players
                 emit('game_ended', {
@@ -331,7 +331,7 @@ def register_socket_events(socketio):
                 match_data = match_col.find_one({'_id': match_obj_id})
                 result = match_data.get('status')
                 
-                logger.info(f"🏳️ Player {user_id} resigned from match {match_id}")
+                logger.info(f"[+] Player {user_id} resigned from match {match_id}")
                 
                 # Notify both players
                 emit('player_resigned', {

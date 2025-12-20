@@ -293,3 +293,4 @@ def is_valid_player(match_id: ObjectId, user_id: ObjectId) -> tuple[bool, str | 
     except Exception as e:
         logger.error(f" Error validating player: {e}")
         return False, "Internal error"
+    

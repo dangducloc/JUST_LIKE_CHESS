@@ -205,13 +205,13 @@ function initializeSocket() {
     
     // ===== GAME END EVENTS =====
     socket.on('game_ended', (data) => {
-        console.log('🏁 Game ended:', data);
+        console.log('[+] Game ended:', data);
         gameActive = false;
         showGameEndModal(data);
     });
     
     socket.on('player_resigned', (data) => {
-        console.log('🏳️ Player resigned:', data);
+        console.log('[+] Player resigned:', data);
         gameActive = false;
         showGameEndModal({
             result: data.result,
@@ -301,15 +301,15 @@ function onDragStart(source, piece, position, orientation) {
 }
 
 function onDrop(source, target) {
-    console.log('🎯 Drop:', source, '→', target);
+    console.log('[+] Drop:', source, '→', target);
     
-    // ✅ CHECK FOR PROMOTION
+    // [+] CHECK FOR PROMOTION
     if (isPromotionMove(source, target)) {
-        console.log('✨ Showing promotion modal');
+        console.log('[+] Showing promotion modal');
         
         // Show modal and wait for user selection
         showPromotionModal(source, target, (promotionPiece) => {
-            console.log('👑 Selected piece:', promotionPiece);
+            console.log('[+] Selected piece:', promotionPiece);
             executeMoveWithPromotion(source, target, promotionPiece);
         });
         
@@ -334,11 +334,11 @@ function executeMove(source, target, promotion = null) {
     const move = game.move(moveConfig);
     
     if (!move) {
-        console.warn('❌ Invalid move:', source, '→', target);
+        console.warn('[-] Invalid move:', source, '→', target);
         return 'snapback';
     }
     
-    console.log('✅ Move successful:', move.san);
+    console.log('[+] Move successful:', move.san);
     
     // Send move to server
     socket.emit('make_move', {
@@ -385,7 +385,7 @@ function executeMoveWithPromotion(source, target, promotionPiece) {
         // Play promotion sound
         playPromotionSound();
     } else {
-        console.error('❌ Promotion move failed:', source, target, promotionPiece);
+        console.error('[-] Promotion move failed:', source, target, promotionPiece);
         showError('Invalid promotion move');
     }
 }

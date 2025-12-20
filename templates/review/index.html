@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Find Match - Chess App</title>
+    <link rel="stylesheet" href="/static/css/matching/matching.css">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <div class="logo">♔ Chess App</div>
+            <div class="user-info">
+                <span id="userName">Loading...</span>
+                <span id="userElo" class="elo-badge">ELO: ---</span>
+                <button class="btn-logout" onclick="logout()">Logout</button>
+            </div>
+        </header>
+
+        <main class="main-content">
+            <!-- pgn review -->
+            <div class="pgn_review">
+                
+            </div>
+            <!-- chess board -->
+            <div class="chessboard">
+
+            </div>
+            <!-- Recent Matches -->
+            <div class="recent-matches">
+                <h2>Recent Matches</h2>
+                <hr>
+                <br>
+                <div id="matchHistory" class="match-list">...</div>
+                
+                <div class="pagination-nav">
+                    <!-- <div class="pagination-info">1-5 of 20</div> -->
+                    <div class="pagination-buttons">
+                        <button class="pagination-btn" id="prevPageBtn" onclick="prevPage()"> < </button>
+                        <button class="pagination-btn" id="nextPageBtn" onclick="nextPage()"> > </button>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+    <script src="/static/js/matching/matching.js"></script>
+    <script src="/static/js/matching/recent_matches.js"></script>
+</body>
+</html>
