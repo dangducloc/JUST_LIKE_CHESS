@@ -34,6 +34,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     
     // Setup event listeners
     setupEventListeners();
+    initPromotionHandlers(); 
     
     // Initialize board after socket connects
     // Board will be initialized in handle_match_joined
@@ -176,7 +177,7 @@ function initializeSocket() {
     });
     
     socket.on('opponent_move', (data) => {
-        console.log('♟️ Opponent moved:', data.move);
+        console.log('[+] Opponent moved:', data.move);
         
         // Make the move on the board
         const move = game.move(data.move);
@@ -204,13 +205,13 @@ function initializeSocket() {
     
     // ===== GAME END EVENTS =====
     socket.on('game_ended', (data) => {
-        console.log('🏁 Game ended:', data);
+        console.log('[+] Game ended:', data);
         gameActive = false;
         showGameEndModal(data);
     });
     
     socket.on('player_resigned', (data) => {
-        console.log('🏳️ Player resigned:', data);
+        console.log('[+] Player resigned:', data);
         gameActive = false;
         showGameEndModal({
             result: data.result,
@@ -279,7 +280,10 @@ function initializeBoard() {
 // ==================== CHESS LOGIC ====================
 function onDragStart(source, piece, position, orientation) {
     // Don't allow moves if game is over
-    if (gameActive === false) return false;
+    if (gameActive === false) {
+        showNotification("Game is over", 'warning');
+        return false;
+    }
     
     // Don't allow moves if not your turn
     if (!isMyTurn) {
@@ -293,38 +297,97 @@ function onDragStart(source, piece, position, orientation) {
         return false;
     }
     
-    // Don't pick up pieces if in check and must move king
-    // (chess.js handles this, but we can add UI feedback)
+    return true;
 }
 
 function onDrop(source, target) {
-    // See if the move is legal
-    const move = game.move({
-        from: source,
-        to: target,
-        promotion: 'q' // Always promote to queen for simplicity
-        // TODO: Add promotion choice dialog
-    });
+    console.log('[+] Drop:', source, '→', target);
     
-    // Illegal move
-    if (move === null) {
+    // [+] CHECK FOR PROMOTION
+    if (isPromotionMove(source, target)) {
+        console.log('[+] Showing promotion modal');
+        
+        // Show modal and wait for user selection
+        showPromotionModal(source, target, (promotionPiece) => {
+            console.log('[+] Selected piece:', promotionPiece);
+            executeMoveWithPromotion(source, target, promotionPiece);
+        });
+        
+        // Temporarily snap back until promotion is selected
         return 'snapback';
     }
     
-    // Legal move - send to server
+    // Normal move (not promotion)
+    return executeMove(source, target);
+}
+
+function executeMove(source, target, promotion = null) {
+    const moveConfig = {
+        from: source,
+        to: target
+    };
+    
+    if (promotion) {
+        moveConfig.promotion = promotion;
+    }
+    
+    const move = game.move(moveConfig);
+    
+    if (!move) {
+        console.warn('[-] Invalid move:', source, '→', target);
+        return 'snapback';
+    }
+    
+    console.log('[+] Move successful:', move.san);
+    
+    // Send move to server
     socket.emit('make_move', {
         match_id: matchId,
         user_id: userId,
-        move: move.san,  // Standard Algebraic Notation
-        fen: game.fen()  // Board state
+        move: move.san,
+        fen: game.fen()
     });
     
     // Update UI
     addMoveToHistory(move);
     updateCapturedPieces();
-    
-    // Check game state
     checkGameState();
+    
+    return null; // Success
+}
+
+function executeMoveWithPromotion(source, target, promotionPiece) {
+    const move = game.move({
+        from: source,
+        to: target,
+        promotion: promotionPiece
+    });
+    
+    if (move) {
+        console.log('♕ Promotion successful:', move.san);
+        
+        // Update board position
+        board.position(game.fen());
+        
+        // Send to server
+        socket.emit('make_move', {
+            match_id: matchId,
+            user_id: userId,
+            move: move.san,
+            fen: game.fen()
+        });
+        
+        // Update UI
+        addMoveToHistory(move);
+        updateCapturedPieces();
+        checkGameState();
+        
+        // Play promotion sound
+        playPromotionSound();
+    } else {
+        console.error('[-] Promotion move failed:', source, target, promotionPiece);
+        showError('Invalid promotion move');
+    }
 }
 
 function onSnapEnd() {
@@ -368,8 +431,12 @@ function checkGameState() {
     } else if (game.in_check()) {
         const turn = game.turn() === 'w' ? 'White' : 'Black';
         showNotification(`${turn} is in check!`, 'warning');
-        document.getElementById('gameStatus').textContent = 'Check!';
-        document.getElementById('gameStatus').className = 'value status-check';
+        
+        const statusEl = document.getElementById('gameStatus');
+        if (statusEl) {
+            statusEl.textContent = 'Check!';
+            statusEl.className = 'value status-check';
+        }
     }
 }
 
@@ -406,7 +473,7 @@ function addMoveToHistory(move) {
     const noMoves = history.querySelector('.no-moves');
     if (noMoves) noMoves.remove();
     
-    const moveNumber = Math.floor(game.history().length / 2);
+    const moveNumber = Math.ceil(game.history().length / 2);
     const isWhiteMove = move.color === 'w';
     
     // Create or get current row
@@ -418,18 +485,35 @@ function addMoveToHistory(move) {
         currentRow.dataset.move = moveNumber;
         currentRow.innerHTML = `
             <div class="move-number">${moveNumber}.</div>
-            <div class="move-white">${move.san}</div>
+            <div class="move-white">${formatMove(move)}</div>
             <div class="move-black">-</div>
         `;
         history.appendChild(currentRow);
     } else {
         if (currentRow) {
-            currentRow.querySelector('.move-black').textContent = move.san;
+            currentRow.querySelector('.move-black').textContent = formatMove(move);
         }
     }
     
     // Scroll to bottom
     history.scrollTop = history.scrollHeight;
+}
+
+function formatMove(move) {
+    let formatted = move.san;
+    
+    // Add visual indicators
+    if (move.san.includes('#')) {
+        formatted = `<strong>${formatted}</strong> ✓`; // Checkmate
+    } else if (move.san.includes('+')) {
+        formatted = `${formatted} ⚠`; // Check
+    }
+    
+    if (move.captured) {
+        formatted = `<strong>${formatted}</strong>`; // Bold captures
+    }
+    
+    return formatted;
 }
 
 // ==================== CAPTURED PIECES ====================
@@ -512,6 +596,7 @@ function setupEventListeners() {
     // Flip board button
     document.getElementById('flipBoardBtn').addEventListener('click', () => {
         board.flip();
+        showNotification('Board flipped', 'info');
     });
     
     // Chat input
@@ -722,31 +807,58 @@ function escapeHtml(text) {
 
 function playMoveSound() {
     // Optional: Add move sound
-    // const audio = new Audio('/static/sounds/move.mp3');
-    // audio.play().catch(e => console.log('Audio play failed'));
+    try {
+        const audio = new Audio('/static/sounds/move.mp3');
+        audio.volume = 0.5;
+        audio.play().catch(() => {});
+    } catch (e) {
+        // Sound not available
+    }
+}
+
+function playPromotionSound() {
+    console.log('♕ Pawn promoted!');
+    try {
+        const audio = new Audio('/static/sounds/promote.mp3');
+        audio.volume = 0.5;
+        audio.play().catch(() => {});
+    } catch (e) {
+        // Sound not available
+    }
 }
 
 // ==================== KEYBOARD SHORTCUTS ====================
 document.addEventListener('keydown', (e) => {
+    // Don't interfere with chat input
+    if (document.activeElement.id === 'chatInput') return;
+    
     // ESC to close modals
     if (e.key === 'Escape') {
         document.querySelectorAll('.modal').forEach(modal => {
-            modal.classList.add('hidden');
+            if (!modal.classList.contains('hidden')) {
+                // Don't close promotion modal with ESC - it auto-selects Queen
+                if (modal.id !== 'promotionModal') {
+                    modal.classList.add('hidden');
+                }
+            }
         });
     }
     
     // F to flip board
     if (e.key === 'f' || e.key === 'F') {
-        board.flip();
+        if (board) {
+            board.flip();
+            showNotification('Board flipped', 'info');
+        }
     }
 });
 
 // ==================== PAGE VISIBILITY ====================
 document.addEventListener('visibilitychange', () => {
     if (document.hidden) {
-        console.log('Page hidden');
+        console.log('📱 Page hidden');
     } else {
-        console.log('Page visible');
+        console.log('📱 Page visible');
         // Sync game state when user returns
         if (socket && socket.connected) {
             socket.emit('join_match', {

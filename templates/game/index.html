@@ -10,7 +10,7 @@
     
     <!-- Custom CSS -->
     <link rel="stylesheet" href="/static/css/game/game.css">
-    
+    <link rel="stylesheet" href="/static/css/game/promotion.css">
     <!-- jQuery (required by chessboard.js) -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     
@@ -219,11 +219,23 @@
             </div>
         </div>
     </div>
-    
+    <!-- Promotion Modal -->
+    <div id="promotionModal" class="modal hidden">
+        <div class="promotion-box">
+            <h3>Promote pawn to</h3>
+            <div class="promotion-options">
+                <button data-piece="q">♕</button>
+                <button data-piece="r">♖</button>
+                <button data-piece="b">♗</button>
+                <button data-piece="n">♘</button>
+            </div>
+        </div>
+    </div>
     <!-- Hidden data for JS -->
     <input type="hidden" id="matchId" value="{{ match_id }}">
     
     <!-- Custom Game Script -->
+    <script src="/static/js/game/promotion.js"></script>
     <script src="/static/js/game/game.js"></script>
 </body>
 </html>

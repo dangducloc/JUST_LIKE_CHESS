@@ -108,11 +108,11 @@ def create_app(config_name='default'):
     # Import and register WebSocket events
     # This must be after SocketIO initialization
     try:
-        from api.routes import websocket
-        websocket.register_socket_events(socketio)
+        from api.routes import pvp
+        pvp.register_socket_events(socketio)
         logger.info("[+] WebSocket events registered")
     except Exception as e:
-        logger.error(f"❌ Failed to register WebSocket events: {e}")
+        logger.error(f"[-] Failed to register WebSocket events: {e}")
         raise
     
     # Health check endpoint

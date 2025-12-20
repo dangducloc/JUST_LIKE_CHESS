@@ -8,34 +8,12 @@ from bson import ObjectId
 from DB.connect import user_col, waiting_col, match_col
 from datetime import datetime, timedelta
 import logging
-import jwt
-import os
+from utils.helper import get_user_from_token
 
 matching_bp = Blueprint('matching', __name__)
 logger = logging.getLogger(__name__)
 
-# JWT Secret from environment
-SECRET_KEY = os.getenv('JWT_SECRET_KEY', 'linh')
-
-# ============ HELPER FUNCTION ============
-def get_user_from_token():
-    """Extract user_id from JWT token"""
-    access_token = request.cookies.get('access_token')
-    
-    if not access_token:
-        return None, {"message": "Not authenticated"}, 401
-    
-    try:
-        payload = jwt.decode(access_token, SECRET_KEY, algorithms=['HS256'])
-        user_id = ObjectId(payload.get('user_id'))
-        return user_id, None, None
-    except jwt.ExpiredSignatureError:
-        return None, {"message": "Token expired"}, 401
-    except jwt.InvalidTokenError:
-        return None, {"message": "Invalid token"}, 401
-    except Exception as e:
-        logger.error(f"Token decode error: {e}")
-        return None, {"message": "Authentication error"}, 401
+#helper
 
 # ============ MATCHMAKING QUEUE ============
 class MatchmakingQueue:

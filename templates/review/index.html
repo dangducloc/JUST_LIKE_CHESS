@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Game Review - Chess App</title>
+    
+    <!-- Chessboard CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/chessboard-js/1.0.0/chessboard-1.0.0.min.css">
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/static/css/review/review.css">
+    
+    <!-- jQuery (required by chessboard.js) -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    
+    <!-- Chess.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js"></script>
+    
+    <!-- Chessboard.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/chessboard-js/1.0.0/chessboard-1.0.0.min.js"></script>
+    
+    <!-- Chart.js for evaluation graph -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+</head>
+<body>
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" class="overlay">
+        <div class="overlay-content">
+            <div class="spinner-large"></div>
+            <h2>Analyzing game...</h2>
+            <p>Please wait while we process the analysis</p>
+        </div>
+    </div>
+
+    <div class="review-container">
+        <!-- Header -->
+        <header class="review-header">
+            <div class="header-left">
+                <button class="btn-back" onclick="window.location.href='/home'">
+                    ← Back to Lobby
+                </button>
+            </div>
+            <div class="header-center">
+                <h1>📊 Game Analysis</h1>
+                <div class="match-id">Match ID: <span id="matchIdDisplay">{{ match_id }}</span></div>
+            </div>
+            <div class="header-right">
+                <button class="btn-secondary" id="exportBtn">
+                    📥 Export Report
+                </button>
+            </div>
+        </header>
+
+        <!-- Game Info Banner -->
+        <div class="game-info-banner">
+            <div class="player-info-card white">
+                <div class="piece-icon">♔</div>
+                <div class="player-details">
+                    <div class="player-name" id="whiteName">White Player</div>
+                    <div class="player-elo" id="whiteElo">ELO: ---</div>
+                </div>
+                <div class="player-stats">
+                    <div class="stat-badge blunders">
+                        <span class="stat-label">Blunders</span>
+                        <span class="stat-value" id="whiteBlunders">0</span>
+                    </div>
+                    <div class="stat-badge mistakes">
+                        <span class="stat-label">Mistakes</span>
+                        <span class="stat-value" id="whiteMistakes">0</span>
+                    </div>
+                    <div class="stat-badge inaccuracies">
+                        <span class="stat-label">Inaccuracies</span>
+                        <span class="stat-value" id="whiteInaccuracies">0</span>
+                    </div>
+                    <div class="stat-badge avg-loss">
+                        <span class="stat-label">Avg Loss</span>
+                        <span class="stat-value" id="whiteAvgLoss">0.00</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="vs-divider">
+                <div class="result-badge" id="gameResult">1-0</div>
+                <div class="game-date" id="gameDate">Dec 20, 2025</div>
+            </div>
+
+            <div class="player-info-card black">
+                <div class="piece-icon">♚</div>
+                <div class="player-details">
+                    <div class="player-name" id="blackName">Black Player</div>
+                    <div class="player-elo" id="blackElo">ELO: ---</div>
+                </div>
+                <div class="player-stats">
+                    <div class="stat-badge blunders">
+                        <span class="stat-label">Blunders</span>
+                        <span class="stat-value" id="blackBlunders">0</span>
+                    </div>
+                    <div class="stat-badge mistakes">
+                        <span class="stat-label">Mistakes</span>
+                        <span class="stat-value" id="blackMistakes">0</span>
+                    </div>
+                    <div class="stat-badge inaccuracies">
+                        <span class="stat-label">Inaccuracies</span>
+                        <span class="stat-value" id="blackInaccuracies">0</span>
+                    </div>
+                    <div class="stat-badge avg-loss">
+                        <span class="stat-label">Avg Loss</span>
+                        <span class="stat-value" id="blackAvgLoss">0.00</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="review-content">
+            <!-- Left Panel: Board & Controls -->
+            <div class="board-panel">
+                <div class="board-wrapper">
+                    <div id="reviewBoard"></div>
+                </div>
+
+                <!-- Board Controls -->
+                <div class="board-controls">
+                    <button class="control-btn" id="startBtn" title="Go to start">
+                        ⏮️
+                    </button>
+                    <button class="control-btn" id="prevBtn" title="Previous move">
+                        ◀️
+                    </button>
+                    <button class="control-btn" id="playBtn" title="Auto-play">
+                        ▶️
+                    </button>
+                    <button class="control-btn" id="nextBtn" title="Next move">
+                        ▶️
+                    </button>
+                    <button class="control-btn" id="endBtn" title="Go to end">
+                        ⏭️
+                    </button>
+                    <button class="control-btn" id="flipBtn" title="Flip board">
+                        🔄
+                    </button>
+                </div>
+
+                <!-- Current Move Info -->
+                <div class="current-move-card">
+                    <div class="move-header">
+                        <h3>Move <span id="currentMoveNumber">1</span>: <span id="currentMove">e4</span></h3>
+                        <div class="judgment-badge" id="moveBadge">OK</div>
+                    </div>
+                    
+                    <div class="eval-display">
+                        <div class="eval-item">
+                            <span class="eval-label">Before</span>
+                            <span class="eval-value" id="evalBefore">+0.20</span>
+                        </div>
+                        <div class="eval-arrow">→</div>
+                        <div class="eval-item">
+                            <span class="eval-label">After</span>
+                            <span class="eval-value" id="evalAfter">+0.25</span>
+                        </div>
+                    </div>
+
+                    <div class="best-move-container" id="bestMoveContainer" style="display: none;">
+                        <div class="best-move-header">
+                            <span>💡 Better move available</span>
+                        </div>
+                        <div class="best-move-content">
+                            <span class="label">Best:</span>
+                            <span class="move" id="bestMove">Nf3</span>
+                            <span class="loss">Loss: <span id="moveLoss">0.5</span> pawns</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Evaluation Graph -->
+                <div class="eval-graph-card">
+                    <h3>Position Evaluation</h3>
+                    <span>green mean white win, red mean black win, yellow mean table turn</span>
+                    <canvas id="evalChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Right Panel: Move List & Analysis -->
+            <div class="analysis-panel">
+                <!-- Quick Stats Summary -->
+                <div class="stats-summary-card">
+                    <h3>Game Summary</h3>
+                    <div class="summary-grid">
+                        <div class="summary-item">
+                            <span class="label">Total Moves</span>
+                            <span class="value" id="totalMoves">0</span>
+                        </div>
+                        <div class="summary-item">
+                            <span class="label">Accurate Moves</span>
+                            <span class="value accurate" id="accurateMoves">0</span>
+                        </div>
+                        <div class="summary-item">
+                            <span class="label">Total Errors</span>
+                            <span class="value errors" id="totalErrors">0</span>
+                        </div>
+                        <div class="summary-item">
+                            <span class="label">Critical Moments</span>
+                            <span class="value critical" id="criticalMoments">0</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Move List with Analysis -->
+                <div class="move-list-card">
+                    <div class="move-list-header">
+                        <h3>Move Analysis</h3>
+                        <div class="filter-buttons">
+                            <button class="filter-btn active" data-filter="all">All</button>
+                            <button class="filter-btn" data-filter="blunders">Blunders</button>
+                            <button class="filter-btn" data-filter="mistakes">Mistakes</button>
+                            <button class="filter-btn" data-filter="inaccuracies">Inaccuracies</button>
+                        </div>
+                    </div>
+                    
+                    <div class="move-list-container" id="moveList">
+                        <!-- Moves will be populated here -->
+                        <div class="no-moves">Loading moves...</div>
+                    </div>
+                </div>
+
+                <!-- Key Moments -->
+                <div class="key-moments-card">
+                    <h3>🔑 Critical Moments</h3>
+                    <div id="keyMoments" class="key-moments-list">
+                        <!-- Critical moments will be listed here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Share Modal -->
+    <div id="shareModal" class="modal hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Share Analysis</h3>
+                <button class="modal-close" onclick="closeShareModal()">×</button>
+            </div>
+            <div class="modal-body">
+                <p>Share this game analysis with others:</p>
+                <div class="share-link-container">
+                    <input type="text" id="shareLink" readonly>
+                    <button class="btn-primary" onclick="copyShareLink()">Copy Link</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Error Modal -->
+    <div id="errorModal" class="modal hidden">
+        <div class="modal-content error">
+            <div class="error-icon">❌</div>
+            <h3>Analysis Not Available</h3>
+            <p id="errorMessage">Unable to load game analysis.</p>
+            <button class="btn-primary" onclick="window.location.href='/home'">
+                Back to Lobby
+            </button>
+        </div>
+    </div>
+
+    <!-- Hidden data -->
+    <input type="hidden" id="matchId" value="{{ match_id }}">
+
+    <!-- Custom Scripts -->
+    <script src="/static/js/review/review.js"></script>
+</body>
+</html>

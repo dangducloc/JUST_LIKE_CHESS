@@ -1,0 +1,31 @@
+/* Promotion Modal */
+.promotion-box {
+    background: #1f2933;
+    padding: 20px;
+    border-radius: 12px;
+    text-align: center;
+    min-width: 260px;
+}
+
+.promotion-options {
+    display: flex;
+    justify-content: space-around;
+    margin-top: 15px;
+}
+
+.promotion-options button {
+    font-size: 32px;
+    width: 60px;
+    height: 60px;
+    border-radius: 10px;
+    border: none;
+    cursor: pointer;
+    background: #374151;
+    color: white;
+    transition: transform 0.15s ease, background 0.15s ease;
+}
+
+.promotion-options button:hover {
+    background: #4b5563;
+    transform: scale(1.1);
+}

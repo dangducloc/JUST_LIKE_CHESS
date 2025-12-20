@@ -67,9 +67,10 @@ async function loadStats() {
         if (response.ok) {
             const stats = await response.json();
             document.getElementById('totalGames').textContent = stats.total_games;
+            document.getElementById('draws').textContent = stats.draws;
             document.getElementById('wins').textContent = stats.wins;
             document.getElementById('losses').textContent = stats.losses;
-            document.getElementById('winRate').textContent = `${stats.win_rate}%`;
+            document.getElementById('winRate').textContent = `${parseFloat(stats.win_rate.toFixed(1)).toPrecision()}%`;
         }
     } catch (error) {
         console.error('Failed to load stats:', error);
@@ -107,7 +108,12 @@ function displayMatchHistory(matches) {
         return `
             <div class="match-item">
                 <div>
-                    <div class="match-opponent">${match.opponent_name} (${match.opponent_elo})</div>
+                    <div class="match-opponent">
+                    ${match.opponent_name} <span style="font-size: 0.85rem; color: #6b7280;">(${match.opponent_elo}) </span><br>
+                    Started at: <span style="font-size: 0.85rem; color: #6b7280;">${new Date(match.start).toLocaleDateString()}</span>
+                    &nbsp; &nbsp; &nbsp;&nbsp;&nbsp;
+                    Ended at: <span style="font-size: 0.85rem; color: #6b7280;">${new Date(match.end).toLocaleDateString()}</span>
+                    </div>
                     <div style="font-size: 0.85rem; color: #6b7280;">
                         You played as ${match.your_color}
                     </div>
@@ -170,7 +176,7 @@ function displayLeaderboard(players) {
                 <div class="player-info">
                     <div class="player-name">${player.name}</div>
                     <div class="player-stats">
-                        ELO: ${player.elo} | Games: ${player.games_played} | Win Rate: ${player.win_rate}%
+                        ELO: ${player.elo} | Games: ${player.games_played} | Win Rate: ${parseFloat(player.win_rate.toFixed(1)).toPrecision()}%
                     </div>
                 </div>
             </div>

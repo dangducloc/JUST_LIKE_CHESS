@@ -1,4 +1,4 @@
-# api/routes/websocket.py
+# api/routes/pvp.py
 from flask_socketio import emit, join_room, leave_room, disconnect
 from flask import request
 from bson import ObjectId
@@ -12,11 +12,13 @@ from controllers.matchs.match_controller import (
 )
 from controllers.users.users_controller import change_user_status
 from Models.user_model import UserStatus
+from dotenv import load_dotenv, find_dotenv
 import logging
 import jwt
 import os
 from datetime import datetime
 
+load_dotenv(find_dotenv())
 logger = logging.getLogger(__name__)
 SECRET_KEY = os.getenv('JWT_SECRET_KEY', 'linh')
 
@@ -277,7 +279,7 @@ def register_socket_events(socketio):
                 white_user = user_col.find_one({'_id': match_data['white']})
                 black_user = user_col.find_one({'_id': match_data['black']})
                 
-                logger.info(f"🏁 Game ended: {match_id} - Result: {result} - Reason: {reason}")
+                logger.info(f"[+] Game ended: {match_id} - Result: {result} - Reason: {reason}")
                 
                 # Broadcast to both players
                 emit('game_ended', {
@@ -331,7 +333,7 @@ def register_socket_events(socketio):
                 match_data = match_col.find_one({'_id': match_obj_id})
                 result = match_data.get('status')
                 
-                logger.info(f"🏳️ Player {user_id} resigned from match {match_id}")
+                logger.info(f"[+] Player {user_id} resigned from match {match_id}")
                 
                 # Notify both players
                 emit('player_resigned', {
