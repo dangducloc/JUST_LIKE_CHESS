@@ -3,6 +3,7 @@ from chess import Board,engine,WHITE
 
 from bson import ObjectId
 from controllers.matchs.match_controller import get_match
+from controllers.users.users_controller import get_user_by_id
 from dotenv import load_dotenv, find_dotenv
 import os
 import logging
@@ -23,10 +24,20 @@ def review_game(match_id:ObjectId)->dict|None:
             engine_path=stockfish_path,
             depth=15
         )
+        white = {
+            "id": str(match.white),
+            "username": get_user_by_id(match.white).name,
+            "elo": get_user_by_id(match.white).elo,
+        }
+        black = {
+            "id": str(match.black),
+            "username": get_user_by_id(match.black).name,
+            "elo": get_user_by_id(match.black).elo,
+        }
         result = {
             "match_id": str(match_id),
-            "white": str(match.white),
-            "black": str(match.black),
+            "white":white,
+            "black": black,
             "pgn": match.pgn,
             "status": match.status,
             "move_count": len(analysis),
@@ -35,10 +46,20 @@ def review_game(match_id:ObjectId)->dict|None:
         return result
     elif san_pgn=="" and  match.status == "draw":
         logger.info(f"[!] Match {match_id} is a draw without moves.")
+        white = {
+            "id": str(match.white),
+            "username": get_user_by_id(match.white).name,
+            "elo": get_user_by_id(match.white).elo,
+        }
+        black = {
+            "id": str(match.black),
+            "username": get_user_by_id(match.black).name,
+            "elo": get_user_by_id(match.black).elo,
+        }
         result = {
             "match_id": str(match_id),
-            "white": str(match.white),
-            "black": str(match.black),
+            "white": white,
+            "black": black,
             "pgn": match.pgn,
             "status": match.status,
             "move_count": 0,

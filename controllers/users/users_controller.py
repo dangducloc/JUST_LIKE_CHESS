@@ -64,7 +64,7 @@ def change_user_status(user_id: ObjectId, status: str) -> bool:
         return False
 
 # ================= Find Opponent =================
-def find_opponent(elo:int,wait:int=3600)-> ObjectId | None:
+def find_opponent(elo:int)-> ObjectId | None:
     try:
         # wait for 'wait' seconds to find opponent
         
@@ -81,4 +81,18 @@ def find_opponent(elo:int,wait:int=3600)-> ObjectId | None:
 
     except PyMongoError as e:
         print(f"[-] Error finding opponent: {e}")
+        return None
+    
+# ================= USER BY ID =================
+def get_user_by_id(user_id: ObjectId) -> User | None:
+    try:
+        result = user_col.find_one({"_id": user_id})
+        if result:
+            user = User.from_dict(result)
+            print(f"[+] Retrieved user: {user}")
+            return user
+        print(f"[-] No user found with id: {user_id}")
+        return None
+    except PyMongoError as e:
+        print(f"[-] Error retrieving user: {e}")
         return None

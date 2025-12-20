@@ -8,6 +8,10 @@ hr{
     background-color: #4b5563;
     height: 1px;
 }
+a{
+    text-decoration: none;
+    color: inherit;
+}
 
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;

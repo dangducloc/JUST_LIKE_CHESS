@@ -47,7 +47,7 @@ function displayMatchHistory(matches) {
         const resultText = getResultText(match.result, match.your_color);
 
         return `
-            <div class="match-item">
+            <a class="match-item" href="/review/${match.match_id}">
                 <div class="match-main-info">
                     <div class="piece-color-indicator ${match.your_color.toLowerCase()}" title="You played as ${match.your_color}"></div>
                     
@@ -69,7 +69,7 @@ function displayMatchHistory(matches) {
                         ${resultText}
                     </span>
                 </div>
-            </div>
+            </a>
         `;
     }).join('');
 }
