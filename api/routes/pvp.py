@@ -12,11 +12,13 @@ from controllers.matchs.match_controller import (
 )
 from controllers.users.users_controller import change_user_status
 from Models.user_model import UserStatus
+from dotenv import load_dotenv, find_dotenv
 import logging
 import jwt
 import os
 from datetime import datetime
 
+load_dotenv(find_dotenv())
 logger = logging.getLogger(__name__)
 SECRET_KEY = os.getenv('JWT_SECRET_KEY', 'linh')
 
