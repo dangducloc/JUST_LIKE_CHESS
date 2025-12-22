@@ -1,0 +1,340 @@
+{
+    "info": {
+      "name": "Chess API Collection",
+      "description": "Complete API testing collection for Chess application",
+      "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+    },
+    "variable": [
+      {
+        "key": "base_url",
+        "value": "http://localhost:5000",
+        "type": "string"
+      },
+      {
+        "key": "access_token",
+        "value": "",
+        "type": "string"
+      },
+      {
+        "key": "user_id",
+        "value": "",
+        "type": "string"
+      },
+      {
+        "key": "match_id",
+        "value": "",
+        "type": "string"
+      }
+    ],
+    "item": [
+      {
+        "name": "Authentication",
+        "item": [
+          {
+            "name": "Register",
+            "event": [
+              {
+                "listen": "test",
+                "script": {
+                  "exec": [
+                    "if (pm.response.code === 201) {",
+                    "    console.log('Registration successful');",
+                    "}"
+                  ]
+                }
+              }
+            ],
+            "request": {
+              "method": "POST",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": {
+                "mode": "raw",
+                "raw": "{\n    \"name\": \"Test User\",\n    \"mail\": \"testuser@example.com\",\n    \"password\": \"Test1234\"\n}"
+              },
+              "url": {
+                "raw": "{{base_url}}/api/auth/register",
+                "host": ["{{base_url}}"],
+                "path": ["api", "auth", "register"]
+              }
+            },
+            "response": []
+          },
+          {
+            "name": "Confirm Email",
+            "request": {
+              "method": "GET",
+              "header": [],
+              "url": {
+                "raw": "{{base_url}}/api/auth/confirm/YOUR_TOKEN_HERE",
+                "host": ["{{base_url}}"],
+                "path": ["api", "auth", "confirm", "YOUR_TOKEN_HERE"]
+              }
+            },
+            "response": []
+          },
+          {
+            "name": "Login",
+            "event": [
+              {
+                "listen": "test",
+                "script": {
+                  "exec": [
+                    "if (pm.response.code === 200) {",
+                    "    var jsonData = pm.response.json();",
+                    "    pm.collectionVariables.set('user_id', jsonData.user_id);",
+                    "    console.log('Login successful, user_id:', jsonData.user_id);",
+                    "}"
+                  ]
+                }
+              }
+            ],
+            "request": {
+              "method": "POST",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": {
+                "mode": "raw",
+                "raw": "{\n    \"mail\": \"testuser@example.com\",\n    \"password\": \"Test1234\"\n}"
+              },
+              "url": {
+                "raw": "{{base_url}}/api/auth/login",
+                "host": ["{{base_url}}"],
+                "path": ["api", "auth", "login"]
+              }
+            },
+            "response": []
+          },
+          {
+            "name": "Get Current User",
+            "request": {
+              "method": "GET",
+              "header": [],
+              "url": {
+                "raw": "{{base_url}}/api/auth/me",
+                "host": ["{{base_url}}"],
+                "path": ["api", "auth", "me"]
+              }
+            },
+            "response": []
+          },
+          {
+            "name": "Logout",
+            "request": {
+              "method": "POST",
+              "header": [],
+              "url": {
+                "raw": "{{base_url}}/api/auth/logout",
+                "host": ["{{base_url}}"],
+                "path": ["api", "auth", "logout"]
+              }
+            },
+            "response": []
+          }
+        ]
+      },
+      {
+        "name": "Matchmaking",
+        "item": [
+          {
+            "name": "Find Match",
+            "event": [
+              {
+                "listen": "test",
+                "script": {
+                  "exec": [
+                    "if (pm.response.code === 200 || pm.response.code === 202) {",
+                    "    var jsonData = pm.response.json();",
+                    "    if (jsonData.match_id) {",
+                    "        pm.collectionVariables.set('match_id', jsonData.match_id);",
+                    "        console.log('Match found, match_id:', jsonData.match_id);",
+                    "    }",
+                    "}"
+                  ]
+                }
+              }
+            ],
+            "request": {
+              "method": "POST",
+              "header": [],
+              "url": {
+                "raw": "{{base_url}}/api/matching/find_match",
+                "host": ["{{base_url}}"],
+                "path": ["api", "matching", "find_match"]
+              }
+            },
+            "response": []
+          },
+          {
+            "name": "Check Match Status",
+            "request": {
+              "method": "GET",
+              "header": [],
+              "url": {
+                "raw": "{{base_url}}/api/matching/check_match",
+                "host": ["{{base_url}}"],
+                "path": ["api", "matching", "check_match"]
+              }
+            },
+            "response": []
+          },
+          {
+            "name": "Cancel Match",
+            "request": {
+              "method": "POST",
+              "header": [],
+              "url": {
+                "raw": "{{base_url}}/api/matching/cancel_match",
+                "host": ["{{base_url}}"],
+                "path": ["api", "matching", "cancel_match"]
+              }
+            },
+            "response": []
+          },
+          {
+            "name": "Queue Status",
+            "request": {
+              "method": "GET",
+              "header": [],
+              "url": {
+                "raw": "{{base_url}}/api/matching/queue_status",
+                "host": ["{{base_url}}"],
+                "path": ["api", "matching", "queue_status"]
+              }
+            },
+            "response": []
+          }
+        ]
+      },
+      {
+        "name": "Match",
+        "item": [
+          {
+            "name": "Get Match Details",
+            "request": {
+              "method": "GET",
+              "header": [],
+              "url": {
+                "raw": "{{base_url}}/api/match/{{match_id}}",
+                "host": ["{{base_url}}"],
+                "path": ["api", "match", "{{match_id}}"]
+              }
+            },
+            "response": []
+          },
+          {
+            "name": "Get Match History",
+            "request": {
+              "method": "GET",
+              "header": [],
+              "url": {
+                "raw": "{{base_url}}/api/match/history?limit=10&skip=0",
+                "host": ["{{base_url}}"],
+                "path": ["api", "match", "history"],
+                "query": [
+                  {
+                    "key": "limit",
+                    "value": "10"
+                  },
+                  {
+                    "key": "skip",
+                    "value": "0"
+                  }
+                ]
+              }
+            },
+            "response": []
+          },
+          {
+            "name": "Get User Stats",
+            "request": {
+              "method": "GET",
+              "header": [],
+              "url": {
+                "raw": "{{base_url}}/api/match/stats",
+                "host": ["{{base_url}}"],
+                "path": ["api", "match", "stats"]
+              }
+            },
+            "response": []
+          },
+          {
+            "name": "Get Leaderboard",
+            "request": {
+              "method": "GET",
+              "header": [],
+              "url": {
+                "raw": "{{base_url}}/api/match/leaderboard?limit=10",
+                "host": ["{{base_url}}"],
+                "path": ["api", "match", "leaderboard"],
+                "query": [
+                  {
+                    "key": "limit",
+                    "value": "10"
+                  }
+                ]
+              }
+            },
+            "response": []
+          }
+        ]
+      },
+      {
+        "name": "Review",
+        "item": [
+          {
+            "name": "Get Game Analysis",
+            "request": {
+              "method": "GET",
+              "header": [],
+              "url": {
+                "raw": "{{base_url}}/api/review/{{match_id}}",
+                "host": ["{{base_url}}"],
+                "path": ["api", "review", "{{match_id}}"]
+              }
+            },
+            "response": []
+          }
+        ]
+      },
+      {
+        "name": "Health Check",
+        "item": [
+          {
+            "name": "Health",
+            "request": {
+              "method": "GET",
+              "header": [],
+              "url": {
+                "raw": "{{base_url}}/health",
+                "host": ["{{base_url}}"],
+                "path": ["health"]
+              }
+            },
+            "response": []
+          },
+          {
+            "name": "API Info",
+            "request": {
+              "method": "GET",
+              "header": [],
+              "url": {
+                "raw": "{{base_url}}/api",
+                "host": ["{{base_url}}"],
+                "path": ["api"]
+              }
+            },
+            "response": []
+          }
+        ]
+      }
+    ]
+  }

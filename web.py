@@ -129,7 +129,7 @@ def create_app(config_name='default'):
             "websocket": "enabled"
         }, 200
     
-    @app.route('/api')
+    @app.route('/api', strict_slashes=False)
     def home():
         return {
             "message": "Chess API is running", 
