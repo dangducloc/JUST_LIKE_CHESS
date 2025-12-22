@@ -1,0 +1,864 @@
+/* ==================== RESET & BASE ==================== */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(135deg,rgb(169, 176, 205) 0%,rgb(195, 172, 219) 100%);
+    color: #333;
+    min-height: 100vh;
+    overflow-x: hidden;
+}
+
+/* ==================== LOADING OVERLAY ==================== */
+.overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.9);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10000;
+    transition: opacity 0.3s ease;
+}
+
+.overlay.hidden {
+    opacity: 0;
+    pointer-events: none;
+}
+
+.overlay-content {
+    text-align: center;
+    color: white;
+}
+
+.spinner-large {
+    width: 60px;
+    height: 60px;
+    border: 5px solid rgba(255, 255, 255, 0.2);
+    border-top: 5px solid #fff;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin: 0 auto 20px;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* ==================== CONNECTION STATUS BANNER ==================== */
+.connection-banner {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    background: #f59e0b;
+    color: white;
+    padding: 10px 20px;
+    text-align: center;
+    z-index: 9999;
+    font-weight: 600;
+    animation: slideDown 0.3s ease-out;
+}
+
+.connection-banner.hidden {
+    display: none;
+}
+
+.connection-banner.error {
+    background: #ef4444;
+}
+
+.connection-banner.success {
+    background: #10b981;
+}
+
+@keyframes slideDown {
+    from {
+        transform: translateY(-100%);
+    }
+    to {
+        transform: translateY(0);
+    }
+}
+
+/* ==================== MAIN CONTAINER ==================== */
+.game-container {
+    max-width: 1800px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+/* ==================== HEADER ==================== */
+.game-header {
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem 2rem;
+    margin-bottom: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.header-left, .header-right {
+    flex: 1;
+}
+
+.header-center {
+    text-align: center;
+    flex: 2;
+}
+
+.header-center h1 {
+    font-size: 1.8rem;
+    color: #1e3c72;
+    margin-bottom: 0.25rem;
+}
+
+.match-id {
+    font-size: 0.9rem;
+    color: #6b7280;
+}
+
+.btn-back {
+    background: #6b7280;
+    color: white;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: all 0.2s;
+}
+
+.btn-back:hover {
+    background: #4b5563;
+    transform: translateX(-2px);
+}
+
+/* Connection Indicator */
+.connection-indicator {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    justify-content: flex-end;
+}
+
+.connection-indicator .dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: #ef4444;
+    animation: pulse 2s infinite;
+}
+
+.connection-indicator.connected .dot {
+    background: #10b981;
+    animation: none;
+}
+
+.connection-indicator .text {
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: #6b7280;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+}
+
+/* ==================== GAME CONTENT LAYOUT ==================== */
+.game-content {
+    display: grid;
+    grid-template-columns: 300px 1fr 350px;
+    gap: 20px;
+}
+
+/* ==================== SIDEBARS ==================== */
+.sidebar {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+/* ==================== PLAYER CARDS ==================== */
+.player-card {
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.opponent-card {
+    border-top: 4px solid #ef4444;
+}
+
+.your-card-top {
+    border-top: 4px solid #10b981;
+}
+
+.player-avatar {
+    width: 80px;
+    height: 80px;
+    margin: 0 auto 1rem;
+    position: relative;
+}
+
+.player-avatar.small {
+    width: 50px;
+    height: 50px;
+    margin: 0 0.5rem 0 0;
+}
+
+.avatar-icon {
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2.5rem;
+}
+
+.player-avatar.small .avatar-icon {
+    font-size: 1.5rem;
+}
+
+.connection-status {
+    position: absolute;
+    bottom: 5px;
+    right: 5px;
+}
+
+.status-dot {
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    border: 2px solid white;
+}
+
+.status-dot.online {
+    background: #10b981;
+}
+
+.status-dot.offline {
+    background: #6b7280;
+}
+
+.player-info {
+    text-align: center;
+}
+
+.player-name {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: #1f2937;
+    margin-bottom: 0.5rem;
+}
+
+.player-elo {
+    font-size: 1rem;
+    color: #6b7280;
+    margin-bottom: 0.5rem;
+}
+
+.elo-value {
+    font-weight: 700;
+    color: #667eea;
+}
+
+.player-color {
+    margin-top: 0.5rem;
+}
+
+.color-piece {
+    font-size: 1.5rem;
+}
+
+/* Captured Pieces */
+.captured-pieces {
+    margin-top: 1rem;
+    padding: 0.75rem;
+    background: #f8f9fa;
+    border-radius: 8px;
+    min-height: 40px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    justify-content: center;
+}
+
+.captured-piece {
+    font-size: 1.2rem;
+    opacity: 0.7;
+}
+
+/* ==================== GAME CONTROLS ==================== */
+.game-controls {
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.game-controls h4 {
+    margin-bottom: 1rem;
+    color: #1f2937;
+}
+
+.game-controls .btn {
+    width: 100%;
+    margin-bottom: 0.5rem;
+}
+
+/* ==================== GAME STATUS CARD ==================== */
+.game-status-card {
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.game-status-card h4 {
+    margin-bottom: 1rem;
+    color: #1f2937;
+}
+
+.status-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.status-item:last-child {
+    border-bottom: none;
+}
+
+.status-item .label {
+    color: #6b7280;
+    font-weight: 500;
+}
+
+.status-item .value {
+    font-weight: 700;
+    color: #1f2937;
+}
+
+.status-ongoing { color: #10b981; }
+.status-check { color: #f59e0b; }
+.status-checkmate { color: #ef4444; }
+
+/* ==================== BOARD AREA ==================== */
+.board-area {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.your-card-top {
+    width: 100%;
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    padding: 1rem;
+}
+
+.board-wrapper {
+    position: relative;
+    width: 600px;
+    height: 600px;
+    margin: 0 auto;
+}
+
+#chessboard {
+    width: 100%;
+    height: 100%;
+}
+
+.board-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+}
+
+.board-overlay.active {
+    display: flex;
+}
+
+.overlay-message {
+    background: white;
+    padding: 2rem;
+    border-radius: 12px;
+    text-align: center;
+    font-size: 1.5rem;
+    font-weight: 700;
+}
+
+/* Move Indicator */
+.move-indicator {
+    margin-top: 1rem;
+    padding: 1rem 2rem;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s;
+}
+
+.move-indicator.hidden {
+    opacity: 0;
+}
+
+.indicator-content {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 600;
+    color: #6b7280;
+}
+
+.indicator-icon {
+    font-size: 1.5rem;
+    animation: spin 2s linear infinite;
+}
+
+.move-indicator.your-turn {
+    background: #d1fae5;
+    border: 2px solid #10b981;
+}
+
+.move-indicator.your-turn .indicator-content {
+    color: #065f46;
+}
+
+/* ==================== MOVE HISTORY ==================== */
+.move-history-card {
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    height: 400px;
+    display: flex;
+    flex-direction: column;
+}
+
+.move-history-card h4 {
+    margin-bottom: 1rem;
+    color: #1f2937;
+}
+
+.move-history {
+    flex: 1;
+    overflow-y: auto;
+    padding: 0.5rem;
+    background: #f8f9fa;
+    border-radius: 8px;
+}
+
+.move-row {
+    display: grid;
+    grid-template-columns: 40px 1fr 1fr;
+    gap: 10px;
+    padding: 0.5rem;
+    margin-bottom: 0.25rem;
+    background: white;
+    border-radius: 6px;
+    font-size: 0.9rem;
+}
+
+.move-number {
+    font-weight: 700;
+    color: #6b7280;
+}
+
+.move-white, .move-black {
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    font-weight: 600;
+}
+
+.move-white {
+    background: #e5e7eb;
+    color: #1f2937;
+}
+
+.move-black {
+    background: #1f2937;
+    color: white;
+}
+
+.no-moves {
+    text-align: center;
+    color: #9ca3af;
+    padding: 2rem 0;
+}
+
+/* ==================== CHAT ==================== */
+.chat-card {
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    height: calc(100vh - 700px);
+    min-height: 300px;
+    display: flex;
+    flex-direction: column;
+}
+
+.chat-card h4 {
+    margin-bottom: 1rem;
+    color: #1f2937;
+}
+
+.chat-messages {
+    flex: 1;
+    overflow-y: auto;
+    padding: 0.5rem;
+    background: #f8f9fa;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+}
+
+.chat-info {
+    text-align: center;
+    color: #9ca3af;
+    padding: 1rem 0;
+    font-size: 0.9rem;
+}
+
+.chat-message {
+    margin-bottom: 0.75rem;
+    padding: 0.5rem;
+    border-radius: 8px;
+    animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.chat-message.mine {
+    background: #dbeafe;
+    margin-left: 2rem;
+}
+
+.chat-message.theirs {
+    background: #e5e7eb;
+    margin-right: 2rem;
+}
+
+.chat-sender {
+    font-weight: 700;
+    font-size: 0.85rem;
+    margin-bottom: 0.25rem;
+    color: #374151;
+}
+
+.chat-text {
+    font-size: 0.9rem;
+    color: #1f2937;
+}
+
+.chat-time {
+    font-size: 0.75rem;
+    color: #9ca3af;
+    margin-top: 0.25rem;
+}
+
+.chat-input-area {
+    display: flex;
+    gap: 0.5rem;
+}
+
+#chatInput {
+    flex: 1;
+    padding: 0.75rem;
+    border: 2px solid #e5e7eb;
+    border-radius: 8px;
+    font-size: 0.9rem;
+}
+
+#chatInput:focus {
+    outline: none;
+    border-color: #667eea;
+}
+
+.btn-send {
+    padding: 0.75rem 1rem;
+    background: #667eea;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1.2rem;
+    transition: all 0.2s;
+}
+
+.btn-send:hover {
+    background: #5a67d8;
+    transform: scale(1.05);
+}
+
+/* ==================== BUTTONS ==================== */
+.btn {
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: white;
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+}
+
+.btn-secondary {
+    background: #6b7280;
+    color: white;
+}
+
+.btn-secondary:hover {
+    background: #4b5563;
+}
+
+.btn-danger {
+    background: #ef4444;
+    color: white;
+}
+
+.btn-danger:hover {
+    background: #dc2626;
+}
+
+.btn-warning {
+    background: #f59e0b;
+    color: white;
+}
+
+.btn-warning:hover {
+    background: #d97706;
+}
+
+.btn-success {
+    background: #10b981;
+    color: white;
+}
+
+.btn-success:hover {
+    background: #059669;
+}
+
+.btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none !important;
+}
+
+/* ==================== MODALS ==================== */
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    animation: fadeIn 0.3s ease-out;
+}
+
+.modal.hidden {
+    display: none;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.modal-content {
+    background: white;
+    border-radius: 16px;
+    padding: 2.5rem;
+    max-width: 500px;
+    width: 90%;
+    text-align: center;
+    animation: scaleIn 0.3s ease-out;
+}
+
+@keyframes scaleIn {
+    from {
+        transform: scale(0.9);
+        opacity: 0;
+    }
+    to {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+.game-end-content {
+    max-width: 600px;
+}
+
+.result-icon {
+    font-size: 5rem;
+    margin-bottom: 1rem;
+}
+
+.result-title {
+    font-size: 2rem;
+    margin-bottom: 1rem;
+    color: #1f2937;
+}
+
+.result-message {
+    font-size: 1.1rem;
+    color: #6b7280;
+    margin-bottom: 2rem;
+}
+
+.result-details {
+    background: #f8f9fa;
+    padding: 1.5rem;
+    border-radius: 12px;
+    margin-bottom: 2rem;
+}
+
+.elo-changes {
+    display: flex;
+    justify-content: space-around;
+    gap: 2rem;
+}
+
+.elo-change-item {
+    text-align: center;
+}
+
+.elo-change-label {
+    font-size: 0.9rem;
+    color: #6b7280;
+    margin-bottom: 0.5rem;
+}
+
+.elo-change-value {
+    font-size: 1.5rem;
+    font-weight: 700;
+}
+
+.elo-increase {
+    color: #10b981;
+}
+
+.elo-decrease {
+    color: #ef4444;
+}
+
+.modal-actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+}
+
+.modal-actions .btn {
+    min-width: 150px;
+}
+
+/* ==================== RESPONSIVE ==================== */
+@media (max-width: 1400px) {
+    .game-content {
+        grid-template-columns: 280px 1fr 300px;
+    }
+    
+    .board-wrapper {
+        width: 500px;
+        height: 500px;
+    }
+}
+
+@media (max-width: 1200px) {
+    .game-content {
+        grid-template-columns: 1fr;
+    }
+    
+    .sidebar-left, .sidebar-right {
+        display: none;
+    }
+    
+    .board-wrapper {
+        width: 90vw;
+        max-width: 600px;
+        height: auto;
+        aspect-ratio: 1;
+    }
+}
+
+@media (max-width: 768px) {
+    .game-header {
+        flex-direction: column;
+        gap: 1rem;
+    }
+    
+    .header-left, .header-center, .header-right {
+        flex: none;
+        width: 100%;
+    }
+    
+    .board-wrapper {
+        width: 95vw;
+    }
+}
+
+/* ==================== CHESSBOARD CUSTOMIZATION ==================== */
+.board-b72b1 {
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.highlight-square {
+    box-shadow: inset 0 0 0 3px #f59e0b;
+}
+
+.selected-square {
+    box-shadow: inset 0 0 0 3px #10b981 !important;
+}

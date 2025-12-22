@@ -255,7 +255,12 @@ def get_user_stats(user_id: ObjectId) -> dict:
 def get_leaderboard(limit: int = 10) -> list[dict]:
     """Get top players by ELO"""
     try:
-        users = user_col.find().sort("elo", -1).limit(limit)
+        users = user_col.find({
+                            "$or": [
+                                {"is_bot": {"$exists": False}},
+                                {"is_bot": False}
+                            ]
+                            }).sort("elo", -1).limit(limit)
         
         leaderboard = []
         for rank, user in enumerate(users, 1):
@@ -283,9 +288,8 @@ def is_valid_player(match_id: ObjectId, user_id: ObjectId) -> tuple[bool, str | 
         match = match_col.find_one({"_id": match_id})
         if not match:
             return False, "Match not found"
-        
-        if match["status"] != "ongoing":
-            return False, "Match is not ongoing"
+        # if match["status"] != "ongoing":
+        #     return False, "Match is not ongoing"
         
         if user_id not in [match["white"], match["black"]]:
             return False, "You are not a player in this match"
@@ -294,3 +298,4 @@ def is_valid_player(match_id: ObjectId, user_id: ObjectId) -> tuple[bool, str | 
     except Exception as e:
         logger.error(f" Error validating player: {e}")
         return False, "Internal error"
+    
