@@ -1,5 +1,5 @@
 # web.py - Updated with WebSocket Support
-from flask import Flask
+from flask import Flask,redirect
 from flask_mail import Mail
 from flask_cors import CORS
 from flask_socketio import SocketIO
@@ -112,7 +112,7 @@ def create_app(config_name='default'):
     # Import and register WebSocket events
     # This must be after SocketIO initialization
     try:
-        from api.routes import pvp,pve
+        from web_socket import pvp,pve
         pve.register_bot_socket_events(socketio)
         pvp.register_socket_events(socketio)
         logger.info("[+] WebSocket events registered")
@@ -129,13 +129,16 @@ def create_app(config_name='default'):
             "websocket": "enabled"
         }, 200
     
-    @app.route('/')
+    @app.route('/api')
     def home():
         return {
             "message": "Chess API is running", 
             "version": "2.0.0-websocket",
             "features": ["REST API", "WebSocket", "Real-time Chess"]
         }, 200
+    @app.route('/')
+    def frontend_home():
+        return redirect('/home')
     
     # Cleanup on shutdown
     @app.teardown_appcontext

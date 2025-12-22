@@ -323,33 +323,105 @@ function filterMoves(filter) {
 const evalBackgroundPlugin = {
     id: 'evalBackground',
     beforeDraw(chart) {
-        const { ctx, chartArea } = chart;
+        const { ctx, chartArea, scales } = chart;
         if (!chartArea) return;
 
-        const dataset = chart.data.datasets[0];
-        const values = dataset.data;
-
-        let index = chart._active?.[0]?.index;
-        if (index == null) index = values.length - 1;
-
-        const y = values[index];
-        if (isNaN(y)) return;
-
         ctx.save();
-        ctx.fillStyle =
-            y > 0
-                ? 'rgba(34,197,94,0.08)'   // green background
-                : y < 0
-                ? 'rgba(239,68,68,0.08)'   // red background
-                : 'rgba(0,0,0,0)';
-
+        
+        // White advantage area (top half, green)
+        const zeroY = scales.y.getPixelForValue(0);
+        ctx.fillStyle = 'rgba(34, 197, 94, 0.08)';
         ctx.fillRect(
             chartArea.left,
             chartArea.top,
             chartArea.right - chartArea.left,
-            chartArea.bottom - chartArea.top
+            zeroY - chartArea.top
         );
+        
+        // Black advantage area (bottom half, red)
+        ctx.fillStyle = 'rgba(239, 68, 68, 0.08)';
+        ctx.fillRect(
+            chartArea.left,
+            zeroY,
+            chartArea.right - chartArea.left,
+            chartArea.bottom - zeroY
+        );
+        
         ctx.restore();
+    }
+};
+
+const blunderMarkersPlugin = {
+    id: 'blunderMarkers',
+    afterDatasetsDraw(chart) {
+        const { ctx, chartArea, scales } = chart;
+        if (!chartArea || !analysis) return;
+
+        ctx.save();
+        
+        analysis.analysis.forEach((move, index) => {
+            if (move.judgment === 'BLUNDER' || move.loss_cp > 200) {
+                const x = scales.x.getPixelForValue(index + 1);
+                const y = scales.y.getPixelForValue(parseEval(move.eval_after));
+                
+                if (x >= chartArea.left && x <= chartArea.right &&
+                    y >= chartArea.top && y <= chartArea.bottom) {
+                    
+                    // Draw pulsing circle
+                    const gradient = ctx.createRadialGradient(x, y, 0, x, y, 8);
+                    gradient.addColorStop(0, 'rgba(239, 68, 68, 0.8)');
+                    gradient.addColorStop(1, 'rgba(239, 68, 68, 0.2)');
+                    
+                    ctx.fillStyle = gradient;
+                    ctx.beginPath();
+                    ctx.arc(x, y, 8, 0, Math.PI * 2);
+                    ctx.fill();
+                    
+                    // Draw inner dot
+                    ctx.fillStyle = '#ef4444';
+                    ctx.beginPath();
+                    ctx.arc(x, y, 4, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            }
+        });
+        
+        ctx.restore();
+    }
+};
+
+const currentMoveIndicatorPlugin = {
+    id: 'currentMoveIndicator',
+    afterDatasetsDraw(chart) {
+        const { ctx, chartArea, scales } = chart;
+        if (!chartArea || currentPly === undefined) return;
+
+        const x = scales.x.getPixelForValue(currentPly + 1);
+        
+        if (x >= chartArea.left && x <= chartArea.right) {
+            ctx.save();
+            
+            // Draw vertical line
+            ctx.strokeStyle = 'rgba(59, 130, 246, 0.6)';
+            ctx.lineWidth = 2;
+            ctx.setLineDash([5, 5]);
+            ctx.beginPath();
+            ctx.moveTo(x, chartArea.top);
+            ctx.lineTo(x, chartArea.bottom);
+            ctx.stroke();
+            ctx.setLineDash([]);
+            
+            // Draw marker at top
+            ctx.fillStyle = '#3b82f6';
+            ctx.beginPath();
+            ctx.moveTo(x, chartArea.top - 5);
+            ctx.lineTo(x - 5, chartArea.top - 12);
+            ctx.lineTo(x + 5, chartArea.top - 12);
+            ctx.closePath();
+            ctx.fill();
+            
+            ctx.restore();
+        }
     }
 };
 
@@ -361,22 +433,24 @@ function createEvalChart() {
 
     if (evalChart) evalChart.destroy();
 
-    const values = analysis.analysis.map(m => parseEval(m.eval_after));
+    const values = analysis.analysis.map(m => parseEval(m));
     const labels = values.map((_, i) => i + 1);
 
     evalChart = new Chart(ctx, {
         type: 'line',
-        plugins: [evalBackgroundPlugin],
+        plugins: [evalBackgroundPlugin, blunderMarkersPlugin, currentMoveIndicatorPlugin],
         data: {
             labels,
             datasets: [{
                 data: values,
-                borderWidth: 2,
+                borderWidth: 3,
                 pointRadius: 0,
-                tension: 0.15,
+                pointHoverRadius: 6,
+                pointHoverBorderWidth: 3,
+                pointHoverBackgroundColor: '#fff',
+                tension: 0.2,
                 spanGaps: true,
 
-                /* LINE COLOR */
                 segment: {
                     borderColor: ctx => {
                         const y0 = ctx.p0.parsed.y;
@@ -387,13 +461,27 @@ function createEvalChart() {
                     }
                 },
 
-                /* FILL */
                 fill: { target: 'origin' },
                 backgroundColor: ctx => {
+                    const chart = ctx.chart;
+                    const {chartArea} = chart;
+                    if (!chartArea) return 'transparent';
+                    
                     const y = ctx.raw;
-                    if (y > 0) return 'rgba(34,197,94,0.25)';
-                    if (y < 0) return 'rgba(239,68,68,0.25)';
-                    return 'rgba(0,0,0,0)';
+                    const gradient = chart.ctx.createLinearGradient(0, chartArea.top, 0, chartArea.bottom);
+                    
+                    if (y > 0) {
+                        gradient.addColorStop(0, 'rgba(34, 197, 94, 0.3)');
+                        gradient.addColorStop(1, 'rgba(34, 197, 94, 0.05)');
+                    } else if (y < 0) {
+                        gradient.addColorStop(0, 'rgba(239, 68, 68, 0.05)');
+                        gradient.addColorStop(1, 'rgba(239, 68, 68, 0.3)');
+                    } else {
+                        gradient.addColorStop(0, 'transparent');
+                        gradient.addColorStop(1, 'transparent');
+                    }
+                    
+                    return gradient;
                 }
             }]
         },
@@ -404,51 +492,106 @@ function createEvalChart() {
                 intersect: false,
                 mode: 'index'
             },
+            onClick: (event, elements) => {
+                if (elements.length > 0) {
+                    const index = elements[0].index;
+                    goToPly(index);
+                }
+            },
+            onHover: (event, elements) => {
+                event.native.target.style.cursor = elements.length > 0 ? 'pointer' : 'default';
+            },
             scales: {
                 x: {
                     title: {
                         display: true,
-                        text: 'Move Number'
+                        text: 'Move Number',
+                        font: { size: 12, weight: '600' },
+                        color: '#64748b'
+                    },
+                    grid: {
+                        display: false
+                    },
+                    ticks: {
+                        font: { size: 11 },
+                        color: '#94a3b8'
                     }
                 },
                 y: {
-                    min: -10,
-                    max: 10,
+                    min: -15,
+                    max: 15,
                     title: {
                         display: true,
-                        text: 'Evaluation (pawns)'
+                        text: 'Evaluation (pawns)',
+                        font: { size: 12, weight: '600' },
+                        color: '#64748b'
                     },
                     grid: {
-                        color: ctx =>
-                            ctx.tick.value === 0
-                                ? '#94a3b8'
-                                : 'rgba(0,0,0,0.05)',
-                        lineWidth: ctx =>
-                            ctx.tick.value === 0 ? 2 : 1
+                        color: ctx => ctx.tick.value === 0 ? '#94a3b8' : 'rgba(148, 163, 184, 0.15)',
+                        lineWidth: ctx => ctx.tick.value === 0 ? 2 : 1
+                    },
+                    ticks: {
+                        font: { size: 11 },
+                        color: '#94a3b8',
+                        callback: value => {
+                            if (value === 10) return '+10 (Win)';
+                            if (value === -10) return '-10 (Win)';
+                            return value > 0 ? `+${value}` : value;
+                        }
                     }
                 }
             },
             plugins: {
                 legend: { display: false },
                 tooltip: {
+                    enabled: true,
+                    backgroundColor: 'rgba(0, 0, 0, 0.85)',
+                    titleColor: '#fff',
+                    bodyColor: '#fff',
+                    borderColor: 'rgba(255, 255, 255, 0.2)',
+                    borderWidth: 1,
+                    padding: 12,
+                    cornerRadius: 8,
+                    displayColors: false,
                     callbacks: {
-                        label: ctx => `Eval: ${ctx.parsed.y.toFixed(2)}`
+                        title: ctx => {
+                            const index = ctx[0].dataIndex;
+                            const move = analysis.analysis[index];
+                            return `Move ${move.ply}: ${move.move}`;
+                        },
+                        label: ctx => {
+                            const index = ctx.dataIndex;
+                            const move = analysis.analysis[index];
+                            const lines = [`Evaluation: ${move.eval_after}`];
+                            
+                            if (move.judgment !== 'OK') {
+                                lines.push(`Judgment: ${move.judgment}`);
+                                lines.push(`Loss: ${move.loss.toFixed(2)} pawns`);
+                            }
+                            
+                            return lines;
+                        }
                     }
                 }
+            },
+            animation: {
+                duration: 750,
+                easing: 'easeInOutQuart'
             }
         }
     });
 }
 
-function parseEval(evalStr) {
-    if (!evalStr) return NaN;
+function parseEval( move) {
+    if (!move.eval_after) return NaN;
 
-    if (evalStr.includes('M')) {
-        const m = parseInt(evalStr.replace(/[^\d-]/g, ''));
-        return m > 0 ? 10 : -10;
+    // Mate detected
+    if (move.eval_after.startsWith('M')) {
+        // black just move → white win
+        return move.color === 'white' ? 10 : -10;
     }
 
-    const v = parseFloat(evalStr);
+    const v = parseFloat(move.eval_after);
     return isNaN(v) ? NaN : v;
 }
 
