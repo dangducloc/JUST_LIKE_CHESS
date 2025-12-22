@@ -15,14 +15,18 @@ class UserStatus(str, Enum):
 class User:
     def __init__(self, name: str, passwd: str, mail: str,
                  elo: int = 400, status: UserStatus = UserStatus.OFFLINE,
-                 _id: ObjectId = None, hashed: bool = False):
+                 _id: ObjectId = None, hashed: bool = False, is_bot: bool = False):
 
         self._id = _id or ObjectId()
         self.name = name
         self.passwd = passwd if hashed else sha256(passwd.encode()).hexdigest()
         self.mail = mail
         self.elo = elo
-        self.status = status
+        self.is_bot = is_bot
+        self.status = (
+            status if isinstance(status, UserStatus)
+            else UserStatus(status)
+        )
 
         if not self.mail_valid():
             raise ValueError(f"Invalid email: {mail}")
@@ -45,7 +49,8 @@ class User:
             "pass": self.passwd,
             "mail": self.mail,
             "elo": self.elo,
-            "status": self.status.value
+            "status": self.status.value,
+            "is_bot": self.is_bot
         }
 
     @classmethod
@@ -56,6 +61,7 @@ class User:
             mail=data["mail"],
             elo=data.get("elo", 1200),
             status=UserStatus(data.get("status", "idle")),
+            is_bot=data.get("is_bot", False),
             _id=data.get("_id"),
             hashed=True
         )

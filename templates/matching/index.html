@@ -1,11 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Find Match - Chess App</title>
     <link rel="stylesheet" href="/static/css/matching/matching.css">
 </head>
+
 <body>
     <div class="container">
         <header class="header">
@@ -29,7 +31,124 @@
                         🎯 Find Match
                     </button>
                 </div>
+                <!-- Xóa phần cũ và thay bằng: -->
+                <div class="bot-fight-section">
+                    <h2>🤖 Play vs Computer</h2>
+                    <hr><br>
+                    <p style="color: #6b7280; margin-bottom: 1rem;">
+                        Practice your skills against AI opponents of varying difficulty levels
+                    </p>
+                    <!-- Bot fight -->
+                    <div class="bot-difficulty-grid">
+                        <!-- Beginner Bot -->
+                        <div class="bot-card" data-difficulty="beginner">
+                            <div class="bot-header">
+                                <div class="bot-icon">🐣</div>
+                                <div class="bot-info">
+                                    <h3 class="bot-name">ChessBot Junior</h3>
+                                    <div class="bot-elo">ELO: 400-800</div>
+                                </div>
+                            </div>
+                            <div class="bot-description">
+                                Perfect for beginners. Makes occasional mistakes and plays simple strategies.
+                            </div>
+                            <div class="bot-stats">
+                                <span class="stat-badge">Depth: 2</span>
+                                <span class="stat-badge">Thinking: 0.5s</span>
+                            </div>
+                            <button class="btn btn-primary btn-play-bot" data-difficulty="beginner">
+                                ▶️ Play
+                            </button>
+                        </div>
 
+                        <!-- Easy Bot -->
+                        <div class="bot-card" data-difficulty="easy">
+                            <div class="bot-header">
+                                <div class="bot-icon">🐥</div>
+                                <div class="bot-info">
+                                    <h3 class="bot-name">ChessBot Hard</h3>
+                                    <div class="bot-elo">ELO: 800-1200</div>
+                                </div>
+                            </div>
+                            <div class="bot-description">
+                                Good for learning. Plays decent openings but can be exploited in the middlegame.
+                            </div>
+                            <div class="bot-stats">
+                                <span class="stat-badge">Depth: 5</span>
+                                <span class="stat-badge">Thinking: 1.0s</span>
+                            </div>
+                            <button class="btn btn-primary btn-play-bot" data-difficulty="easy">
+                                ▶️ Play
+                            </button>
+                        </div>
+
+                        <!-- Medium Bot -->
+                        <div class="bot-card" data-difficulty="medium">
+                            <div class="bot-header">
+                                <div class="bot-icon">🦅</div>
+                                <div class="bot-info">
+                                    <h3 class="bot-name">ChessBot Super</h3>
+                                    <div class="bot-elo">ELO: 1200-1600</div>
+                                </div>
+                            </div>
+                            <div class="bot-description">
+                                Intermediate level. Solid tactical play and reasonable strategic understanding.
+                            </div>
+                            <div class="bot-stats">
+                                <span class="stat-badge">Depth: 8</span>
+                                <span class="stat-badge">Thinking: 1.5s</span>
+                            </div>
+                            <button class="btn btn-primary btn-play-bot" data-difficulty="medium">
+                                ▶️ Play
+                            </button>
+                        </div>
+
+                        <!-- Hard Bot -->
+                        <div class="bot-card" data-difficulty="hard">
+                            <div class="bot-header">
+                                <div class="bot-icon">🦁</div>
+                                <div class="bot-info">
+                                    <h3 class="bot-name">ChessBot Master</h3>
+                                    <div class="bot-elo">ELO: 1600-2000</div>
+                                </div>
+                            </div>
+                            <div class="bot-description">
+                                Advanced opponent. Strong tactical vision and positional understanding.
+                            </div>
+                            <div class="bot-stats">
+                                <span class="stat-badge">Depth: 12</span>
+                                <span class="stat-badge">Thinking: 2.0s</span>
+                            </div>
+                            <button class="btn btn-primary btn-play-bot" data-difficulty="hard">
+                                ▶️ Play
+                            </button>
+                        </div>
+
+                        <!-- Expert Bot -->
+                        <div class="bot-card" data-difficulty="expert">
+                            <div class="bot-header">
+                                <div class="bot-icon">👑</div>
+                                <div class="bot-info">
+                                    <h3 class="bot-name">ChessBot Godlike</h3>
+                                    <div class="bot-elo">ELO: 2000+</div>
+                                </div>
+                            </div>
+                            <div class="bot-description">
+                                Master level. Extremely strong play with deep calculation and perfect tactics.
+                            </div>
+                            <div class="bot-stats">
+                                <span class="stat-badge">Depth: 16</span>
+                                <span class="stat-badge">Thinking: 3.0s</span>
+                            </div>
+                            <button class="btn btn-primary btn-play-bot" data-difficulty="expert">
+                                ▶️ Play
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Thêm script trước </body> -->
+                <script src="/static/js/matching/bot_selection.js"></script>
                 <!-- User Stats -->
                 <div class="stats-card">
                     <h2>Your Statistics</h2>
@@ -38,11 +157,11 @@
                     <div id="userStats" class="stats-grid">
                         <div class="stat-item">
                             <span class="stat-label">Total Games</span>
-                            <span class="stat-value"  id="totalGames">0</span>
+                            <span class="stat-value" id="totalGames">0</span>
                         </div>
                         <div class="stat-item">
                             <span class="stat-label">Wins</span>
-                            <span class="stat-value"  style="color:#5A9CB5" id="wins">0</span>
+                            <span class="stat-value" style="color:#5A9CB5" id="wins">0</span>
                         </div>
                         <div class="stat-item">
                             <span class="stat-label">Draws</span>
@@ -50,11 +169,11 @@
                         </div>
                         <div class="stat-item">
                             <span class="stat-label">Losses</span>
-                            <span class="stat-value" style="color:#FAAC68"  id="losses">0</span>
+                            <span class="stat-value" style="color:#FAAC68" id="losses">0</span>
                         </div>
                         <div class="stat-item">
                             <span class="stat-label">Win Rate</span>
-                            <span class="stat-value" style="color:#FA6868"  id="winRate">0%</span>
+                            <span class="stat-value" style="color:#FA6868" id="winRate">0%</span>
                         </div>
                     </div>
                 </div>
@@ -79,24 +198,24 @@
                 <div class="matched-card">
                     <div class="success-icon">✓</div>
                     <h2>Match Found!</h2>
-                    
+
                     <div class="opponent-info">
                         <h3>Opponent</h3>
                         <p class="opponent-name" id="opponentName">---</p>
                         <p class="opponent-elo">ELO: <span id="opponentElo">---</span></p>
                     </div>
-                    
+
                     <div class="match-info">
                         <p>You are playing as: <span class="color-badge" id="yourColor">---</span></p>
                     </div>
-                    
+
                     <!-- Auto-redirect notice will be added here dynamically -->
                     <div id="autoRedirectNotice"></div>
-                    
+
                     <button id="startGameBtn" class="btn btn-primary btn-large">
                         Start Game
                     </button>
-                    
+
                     <p style="margin-top: 1rem; font-size: 0.9rem; color: #6b7280;">
                         The game will start automatically, or click the button to start now
                     </p>
@@ -109,12 +228,13 @@
                 <hr>
                 <br>
                 <div id="matchHistory" class="match-list">...</div>
-                
+
                 <div class="pagination-nav">
                     <!-- <div class="pagination-info">1-5 of 20</div> -->
                     <div class="pagination-buttons">
-                        <button class="pagination-btn" id="prevPageBtn" onclick="prevPage()"> < </button>
-                        <button class="pagination-btn" id="nextPageBtn" onclick="nextPage()"> > </button>
+                        <button class="pagination-btn" id="prevPageBtn" onclick="prevPage()">
+                            < </button>
+                                <button class="pagination-btn" id="nextPageBtn" onclick="nextPage()"> > </button>
                     </div>
                 </div>
             </div>
@@ -122,24 +242,18 @@
             <div class="leaderboard">
                 <h2>🏆 Top Players</h2>
                 <hr>
-                    <br>
+                <br>
                 <div id="leaderboardList" class="leaderboard-list">
                     <p class="loading">Loading leaderboard...</p>
                 </div>
             </div>
-            <div class="Bot_fight">
-                <h2>🤖 Bot Fight</h2>
-                <hr>
-                    <br>
-                <div id="leaderboardLis444t" class="leaderboard-list">
-                    <p class="loading">Loading leaderboard...</p>
-                </div>
-            </div>
-            
+
+
         </main>
     </div>
-
+    <script src="/static/js/matching/bot_selection.js"></script>
     <script src="/static/js/matching/matching.js"></script>
     <script src="/static/js/matching/recent_matches.js"></script>
 </body>
+
 </html>

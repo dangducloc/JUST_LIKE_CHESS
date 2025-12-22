@@ -4,6 +4,7 @@ demo.py
 mail_demo.py
 TODO.md
 .vscode/settings.json
+.vscode/launch.json
 test/__init__.py
 Models/__init__.py
 test/*

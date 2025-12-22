@@ -10,6 +10,9 @@ from DB.connect import db_instance
 import os
 from dotenv import load_dotenv, find_dotenv
 import logging
+from utils.helper import bot_initial_setup
+
+logger = logging.getLogger(__name__)
 
 # Load environment variables
 load_dotenv(find_dotenv())
@@ -57,7 +60,9 @@ socketio = None
 def create_app(config_name='default'):
     """Application factory pattern with WebSocket support"""
     global socketio
-    
+     # Initial bot setup
+    bot_initial_setup()
+    logger.info("Bot initial setup completed")
     app = Flask(__name__)
     
     # Load config
@@ -69,7 +74,6 @@ def create_app(config_name='default'):
     else:
         logging.basicConfig(level=logging.DEBUG)
     
-    logger = logging.getLogger(__name__)
     logger.info(f"Starting Chess App in {config_name} mode")
     
     # Initialize extensions
@@ -79,7 +83,7 @@ def create_app(config_name='default'):
     # Initialize SocketIO with proper configuration
     socketio = SocketIO(
         app,
-        cors_allowed_origins="*",  # TODO: Change in production
+        cors_allowed_origins="*",  
         async_mode='eventlet',
         logger=app.debug,
         engineio_logger=app.debug,
@@ -108,7 +112,8 @@ def create_app(config_name='default'):
     # Import and register WebSocket events
     # This must be after SocketIO initialization
     try:
-        from api.routes import pvp
+        from api.routes import pvp,pve
+        pve.register_bot_socket_events(socketio)
         pvp.register_socket_events(socketio)
         logger.info("[+] WebSocket events registered")
     except Exception as e:
